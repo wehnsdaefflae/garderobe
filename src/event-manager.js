@@ -79,10 +79,9 @@ async function createEvent(eventData) {
   await redis.set(`${eventKey}:counter`, 0);
   await redis.expire(`${eventKey}:counter`, ttlSeconds);
 
-  // Initialize location pool (done separately by location-manager)
-  // Just mark that event exists in global registry
-  await redis.sAdd('active_events', slug);
-  await redis.expire('active_events', ttlSeconds);
+  // Track event slug with its own TTL for cleanup
+  await redis.set(`event:${slug}:active`, '1');
+  await redis.expire(`event:${slug}:active`, ttlSeconds);
 
   console.log(`[EVENT CREATED] Slug: ${slug}, Duration: ${eventData.durationHours}h, Expires: ${expiresAt.toISOString()}`);
 
@@ -145,7 +144,9 @@ async function eventExists(slug) {
  */
 async function getActiveEvents() {
   const redis = getRedisClient();
-  const slugs = await redis.sMembers('active_events');
+  // Scan for all active event markers
+  const keys = await redis.keys('event:*:active');
+  const slugs = keys.map(key => key.split(':')[1]);
   return slugs || [];
 }
 

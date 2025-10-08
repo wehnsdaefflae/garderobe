@@ -76,60 +76,25 @@ nano .env
 **Minimum required `.env`:**
 
 ```bash
-SESSION_SECRET=your_generated_secret_here
+# Domain (without https://)
 DOMAIN=garderobe.yourdomain.com
+
+# Base URL (with https://)
+BASE_URL=https://garderobe.yourdomain.com
+
+# Session secret (generate with: openssl rand -base64 32)
+SESSION_SECRET=your_generated_secret_here
+
+# Environment
 NODE_ENV=production
 PORT=3000
+
+# Rate limits
 MAX_EVENTS_PER_IP_PER_HOUR=10
 MAX_TICKETS_PER_EVENT=1000
 ```
 
-#### 4. Enable HTTPS
-
-Edit `docker-compose.yml` and uncomment the Caddy service:
-
-```yaml
-  caddy:
-    image: caddy:2-alpine
-    container_name: garderobe-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - garderobe-network
-    depends_on:
-      - app
-
-volumes:
-  caddy_data:
-  caddy_config:
-```
-
-#### 5. Configure Caddy
-
-Edit `Caddyfile`:
-
-```
-garderobe.yourdomain.com {
-    reverse_proxy app:3000
-    encode gzip zstd
-
-    header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        X-Frame-Options "SAMEORIGIN"
-        X-Content-Type-Options "nosniff"
-        X-XSS-Protection "1; mode=block"
-        -Server
-    }
-}
-```
-
-#### 6. Deploy
+#### 4. Deploy
 
 ```bash
 # Build and start
@@ -159,9 +124,10 @@ curl https://garderobe.yourdomain.com/health
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `SESSION_SECRET` | Yes | - | Random secret for session encryption |
-| `DOMAIN` | No | `garderobe.io` | Your domain name |
+| `DOMAIN` | Yes (prod) | - | Your domain name (without https://) |
+| `BASE_URL` | Yes (prod) | - | Full URL with https:// |
 | `PORT` | No | `3000` | Internal app port |
-| `NODE_ENV` | No | `development` | `production` or `development` |
+| `NODE_ENV` | No | `production` | `production` or `development` |
 | `REDIS_URL` | No | `redis://redis:6379` | Redis connection string |
 | `MAX_EVENTS_PER_IP_PER_HOUR` | No | `10` | Rate limit for event creation |
 | `MAX_TICKETS_PER_EVENT` | No | `1000` | Maximum tickets per event |

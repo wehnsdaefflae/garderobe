@@ -7,8 +7,6 @@ services:
     container_name: garderobe-redis
     restart: unless-stopped
     command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru
-    ports:
-      - "6379:6379"
     networks:
       - garderobe-network
     healthcheck:
@@ -22,16 +20,14 @@ services:
     build: .
     container_name: garderobe-app
     restart: unless-stopped
-    network_mode: host
-    volumes:
-      - ./ssl:/app/ssl:ro
+    networks:
+      - garderobe-network
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3000
-      - HTTPS_PORT=3443
-      - REDIS_URL=redis://localhost:6379
+      - REDIS_URL=redis://redis:6379
       - SESSION_SECRET=${SESSION_SECRET}
-      - BASE_URL=${BASE_URL:-https://192.168.0.200:3443}
+      - BASE_URL=${BASE_URL}
       - MAX_ACTIVE_EVENTS=${MAX_ACTIVE_EVENTS:-1000}
       - MAX_EVENTS_PER_HOUR_GLOBAL=${MAX_EVENTS_PER_HOUR_GLOBAL:-100}
       - MAX_EVENTS_PER_IP_PER_HOUR=${MAX_EVENTS_PER_IP_PER_HOUR:-10}
@@ -46,27 +42,28 @@ services:
       retries: 3
 
   # Reverse proxy with automatic HTTPS (Caddy)
-  # Uncomment for production deployment
-  # caddy:
-  #   image: caddy:2-alpine
-  #   container_name: garderobe-caddy
-  #   restart: unless-stopped
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./Caddyfile:/etc/caddy/Caddyfile
-  #     - caddy_data:/data
-  #     - caddy_config:/config
-  #   networks:
-  #     - garderobe-network
-  #   depends_on:
-  #     - app
+  caddy:
+    image: caddy:2-alpine
+    container_name: garderobe-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${DOMAIN}
+    networks:
+      - garderobe-network
+    depends_on:
+      - app
 
 networks:
   garderobe-network:
     driver: bridge
 
-# volumes:
-#   caddy_data:
-#   caddy_config:
+volumes:
+  caddy_data:
+  caddy_config:
