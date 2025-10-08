@@ -7,6 +7,8 @@ services:
     container_name: garderobe-redis
     restart: unless-stopped
     command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
     networks:
       - garderobe-network
     healthcheck:
@@ -20,14 +22,16 @@ services:
     build: .
     container_name: garderobe-app
     restart: unless-stopped
-    ports:
-      - "${PORT:-3000}:3000"
+    network_mode: host
+    volumes:
+      - ./ssl:/app/ssl:ro
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-development}
       - PORT=3000
-      - REDIS_URL=redis://redis:6379
+      - HTTPS_PORT=3443
+      - REDIS_URL=redis://localhost:6379
       - SESSION_SECRET=${SESSION_SECRET}
-      - DOMAIN=${DOMAIN:-garderobe.io}
+      - BASE_URL=${BASE_URL:-https://192.168.0.200:3443}
       - MAX_ACTIVE_EVENTS=${MAX_ACTIVE_EVENTS:-1000}
       - MAX_EVENTS_PER_HOUR_GLOBAL=${MAX_EVENTS_PER_HOUR_GLOBAL:-100}
       - MAX_EVENTS_PER_IP_PER_HOUR=${MAX_EVENTS_PER_IP_PER_HOUR:-10}
@@ -35,8 +39,6 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    networks:
-      - garderobe-network
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s

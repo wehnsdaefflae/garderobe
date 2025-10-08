@@ -1,15 +1,78 @@
 const crypto = require('crypto');
+const os = require('os');
 const QRCode = require('qrcode');
 const { getRedisClient } = require('./redis');
 const { createEvent, getEvent, eventExists, buildLocationSchema } = require('./event-manager');
 const { initializeLocations, getNextLocation, returnLocation, getCapacityStats } = require('./location-manager');
 const { generateChallenge, storeChallenge, verifyChallenge, checkChallengeRateLimit } = require('./challenge');
 
-const DOMAIN = process.env.DOMAIN || 'garderobe.io';
 const MAX_EVENTS_PER_IP_PER_HOUR = parseInt(process.env.MAX_EVENTS_PER_IP_PER_HOUR, 10) || 10;
 const MAX_TICKETS_PER_EVENT = parseInt(process.env.MAX_TICKETS_PER_EVENT, 10) || 1000;
 const MAX_ACTIVE_EVENTS = parseInt(process.env.MAX_ACTIVE_EVENTS, 10) || 1000;
 const MAX_EVENTS_PER_HOUR_GLOBAL = parseInt(process.env.MAX_EVENTS_PER_HOUR_GLOBAL, 10) || 100;
+
+/**
+ * Check if IP is a private network address
+ */
+function isPrivateIp(ip) {
+  const parts = ip.split('.').map(Number);
+  return (
+    parts[0] === 10 ||
+    (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+    (parts[0] === 192 && parts[1] === 168)
+  );
+}
+
+/**
+ * Get the first non-internal IPv4 address (LAN IP)
+ * Prioritizes private IP addresses (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+ */
+function getLocalNetworkIp() {
+  const interfaces = os.networkInterfaces();
+  const addresses = [];
+
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      // Skip internal (loopback) and non-IPv4 addresses
+      if (iface.family === 'IPv4' && !iface.internal) {
+        addresses.push(iface.address);
+      }
+    }
+  }
+
+  // Prioritize private IPs for local testing
+  const privateIp = addresses.find(isPrivateIp);
+  if (privateIp) {
+    return privateIp;
+  }
+
+  // Fall back to first available IP or localhost
+  return addresses[0] || 'localhost';
+}
+
+/**
+ * Get base URL for the application
+ * Uses BASE_URL from environment if set, otherwise auto-detects from request
+ * If accessed via localhost, uses LAN IP instead for device compatibility
+ */
+function getBaseUrl(req) {
+  if (process.env.BASE_URL) {
+    return process.env.BASE_URL.replace(/\/$/, ''); // Remove trailing slash
+  }
+
+  // Auto-detect from request
+  const protocol = req.secure ? 'https' : 'http';
+  let host = req.get('host');
+
+  // Replace localhost/127.0.0.1 with actual network IP for device access
+  if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) {
+    const networkIp = getLocalNetworkIp();
+    const port = host.includes(':') ? host.split(':')[1] : '';
+    host = port ? `${networkIp}:${port}` : networkIp;
+  }
+
+  return `${protocol}://${host}`;
+}
 
 /**
  * Generate cryptographically secure token
@@ -170,18 +233,17 @@ function setupRoutes(app) {
         rackStart,
         rackEnd,
         spotStart,
-        spotEnd,
-        duration
+        spotEnd
       } = req.body;
 
       // Validation
-      if (!rackStart || !rackEnd || !spotStart || !spotEnd || !duration) {
+      if (!rackStart || !rackEnd || !spotStart || !spotEnd) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
       const spotStartNum = parseInt(spotStart, 10);
       const spotEndNum = parseInt(spotEnd, 10);
-      const durationHours = parseInt(duration, 10);
+      const durationHours = 72; // Fixed duration: 72 hours (3 days)
 
       if (rackStart > rackEnd) {
         return res.status(400).json({ error: 'Invalid rack range' });
@@ -189,10 +251,6 @@ function setupRoutes(app) {
 
       if (spotStartNum > spotEndNum || spotStartNum < 1) {
         return res.status(400).json({ error: 'Invalid spot range' });
-      }
-
-      if (durationHours < 1 || durationHours > 48) {
-        return res.status(400).json({ error: 'Duration must be between 1 and 48 hours' });
       }
 
       // Calculate total locations
@@ -236,8 +294,7 @@ function setupRoutes(app) {
         return res.status(404).send('Event not found');
       }
 
-      const protocol = req.secure ? 'https' : 'http';
-      const baseUrl = process.env.NODE_ENV === 'production' ? `https://${DOMAIN}` : `${protocol}://${req.get('host')}`;
+      const baseUrl = getBaseUrl(req);
 
       // Format expiration time
       const expiresAt = new Date(event.expiresAt).toLocaleString('en-US', {
@@ -251,6 +308,7 @@ function setupRoutes(app) {
       res.render('event-created', {
         slug: event.slug,
         eventName: event.name,
+        staffToken: event.staffToken,
         durationHours: event.durationHours,
         expiresAt,
         baseUrl
@@ -274,11 +332,48 @@ function setupRoutes(app) {
         return res.status(404).send('Event not found');
       }
 
-      const protocol = req.secure ? 'https' : 'http';
-      const baseUrl = process.env.NODE_ENV === 'production' ? `https://${DOMAIN}` : `${protocol}://${req.get('host')}`;
+      const baseUrl = getBaseUrl(req);
       const guestUrl = `${baseUrl}/e/${slug}/new`;
 
       const qrCodeBuffer = await QRCode.toBuffer(guestUrl, {
+        errorCorrectionLevel: 'H',
+        type: 'png',
+        width: 400,
+        margin: 2
+      });
+
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.send(qrCodeBuffer);
+
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+
+  /**
+   * GET /api/qr-staff/:slug - Generate QR code for staff URL
+   */
+  app.get('/api/qr-staff/:slug', async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const { token } = req.query;
+
+      const event = await getEvent(slug);
+      if (!event) {
+        return res.status(404).send('Event not found');
+      }
+
+      // Validate staff token
+      if (!token || token !== event.staffToken) {
+        return res.status(403).send('Invalid staff token');
+      }
+
+      const baseUrl = getBaseUrl(req);
+      const staffUrl = `${baseUrl}/e/${slug}/staff?token=${token}`;
+
+      const qrCodeBuffer = await QRCode.toBuffer(staffUrl, {
         errorCorrectionLevel: 'H',
         type: 'png',
         width: 400,
@@ -341,8 +436,7 @@ function setupRoutes(app) {
       console.log(`[NEW TICKET] Event: ${slug}, ID: ${ticketId}, Token: ${token.slice(0, 4)}...`);
 
       // Redirect to ticket page with token
-      const protocol = req.secure ? 'https' : 'http';
-      const baseUrl = process.env.NODE_ENV === 'production' ? `https://${DOMAIN}` : `${protocol}://${req.get('host')}`;
+      const baseUrl = getBaseUrl(req);
       res.redirect(`${baseUrl}/e/${slug}/ticket/${ticketId}?token=${token}`);
 
     } catch (error) {
@@ -377,32 +471,82 @@ function setupRoutes(app) {
         return res.status(404).send('Not Found');
       }
 
-      // Authorization check
-      if (!isStaff) {
-        // Guest must provide valid token
-        if (!providedToken || providedToken !== ticket.token) {
-          return res.status(404).send('Not Found');
-        }
-
-        // Render guest ticket page
-        const protocol = req.secure ? 'https' : 'http';
-        const baseUrl = process.env.NODE_ENV === 'production' ? `https://${DOMAIN}` : `${protocol}://${req.get('host')}`;
-        const ticketUrl = `${baseUrl}/e/${slug}/ticket/${ticketId}?token=${ticket.token}`;
-
-        return res.render('guest-ticket', {
+      // Staff always gets staff view (priority over token)
+      if (isStaff) {
+        return res.render('staff-ticket', {
           slug,
           ticketId,
-          ticketUrl,
-          token: ticket.token
+          status: ticket.status,
+          location: ticket.location,
+          staffToken: event.staffToken
         });
       }
 
-      // Staff view
-      res.render('staff-ticket', {
+      // Not staff - guest must provide valid token
+      if (!providedToken || providedToken !== ticket.token) {
+        // No token and no staff session - offer staff login
+        return res.send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Access Ticket - Garderobe Digital</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+                color: #fff;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+              }
+              .card {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                padding: 40px;
+                max-width: 400px;
+                text-align: center;
+              }
+              h1 { font-size: 24px; margin-bottom: 20px; }
+              p { margin-bottom: 30px; opacity: 0.9; line-height: 1.6; }
+              .btn {
+                display: block;
+                width: 100%;
+                padding: 16px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: #fff;
+                text-decoration: none;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 16px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <h1>🎫 Staff Access Required</h1>
+              <p>To view and manage this ticket, please access the staff dashboard first.</p>
+              <a href="/e/${slug}/staff?returnTo=/e/${slug}/ticket/${ticketId}" class="btn">
+                Go to Staff Dashboard
+              </a>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+
+      // Render guest ticket page
+      const baseUrl = getBaseUrl(req);
+      const ticketUrl = `${baseUrl}/e/${slug}/ticket/${ticketId}?token=${ticket.token}`;
+
+      res.render('guest-ticket', {
         slug,
         ticketId,
-        status: ticket.status,
-        location: ticket.location
+        ticketUrl,
+        token: ticket.token
       });
 
     } catch (error) {
@@ -439,8 +583,7 @@ function setupRoutes(app) {
       }
 
       // Generate QR code
-      const protocol = req.secure ? 'https' : 'http';
-      const baseUrl = process.env.NODE_ENV === 'production' ? `https://${DOMAIN}` : `${protocol}://${req.get('host')}`;
+      const baseUrl = getBaseUrl(req);
       const ticketUrl = `${baseUrl}/e/${slug}/ticket/${ticketId}?token=${token}`;
 
       const qrCodeBuffer = await QRCode.toBuffer(ticketUrl, {
@@ -470,6 +613,7 @@ function setupRoutes(app) {
   app.get('/e/:slug/staff', async (req, res) => {
     try {
       const { slug } = req.params;
+      const { token, returnTo } = req.query;
 
       // Check event exists
       const event = await getEvent(slug);
@@ -477,8 +621,67 @@ function setupRoutes(app) {
         return res.status(404).send('Event not found or expired');
       }
 
+      // Validate staff token
+      if (!token || token !== event.staffToken) {
+        return res.status(403).send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Access Denied - Garderobe Digital</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+                color: #fff;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+              }
+              .card {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                padding: 40px;
+                max-width: 400px;
+                text-align: center;
+              }
+              h1 { font-size: 24px; margin-bottom: 20px; color: #ef4444; }
+              p { margin-bottom: 30px; opacity: 0.9; line-height: 1.6; }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <h1>🚫 Access Denied</h1>
+              <p>Invalid or missing staff authentication token. Only authorized staff can access this page.</p>
+              <p><small>If you're staff, use the URL from the event creation page.</small></p>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+
       // Set staff session for this event
       req.session[`staff_${slug}`] = true;
+
+      // Always save session explicitly to ensure cookie is set
+      await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      // Redirect if returnTo specified
+      if (returnTo) {
+        return res.redirect(returnTo);
+      }
 
       // Get capacity stats
       const stats = await getCapacityStats(slug);

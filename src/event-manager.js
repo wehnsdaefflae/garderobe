@@ -10,6 +10,14 @@ function generateEventSlug() {
 }
 
 /**
+ * Generate cryptographically secure staff token
+ * 32 characters, URL-safe, base64url encoded
+ */
+function generateStaffToken() {
+  return crypto.randomBytes(24).toString('base64url').slice(0, 32);
+}
+
+/**
  * Parse location schema from racks and spots
  * @param {string} rackStart - Starting rack letter (e.g., 'A')
  * @param {string} rackEnd - Ending rack letter (e.g., 'F')
@@ -50,11 +58,15 @@ async function createEvent(eventData) {
   const expiresAt = new Date(now.getTime() + eventData.durationHours * 60 * 60 * 1000);
   const ttlSeconds = eventData.durationHours * 60 * 60;
 
+  // Generate staff authentication token
+  const staffToken = generateStaffToken();
+
   // Store event metadata with TTL
   const eventKey = `event:${slug}`;
   await redis.hSet(`${eventKey}:meta`, {
     name: eventData.eventName || '',
     locationSchema: eventData.locationSchema,
+    staffToken: staffToken,
     createdAt: now.toISOString(),
     expiresAt: expiresAt.toISOString(),
     durationHours: eventData.durationHours
@@ -78,6 +90,7 @@ async function createEvent(eventData) {
     slug,
     name: eventData.eventName || '',
     locationSchema: eventData.locationSchema,
+    staffToken,
     durationHours: eventData.durationHours,
     createdAt: now,
     expiresAt,
@@ -109,6 +122,7 @@ async function getEvent(slug) {
     slug,
     name: meta.name || '',
     locationSchema: meta.locationSchema,
+    staffToken: meta.staffToken,
     createdAt: meta.createdAt,
     expiresAt: meta.expiresAt,
     durationHours: parseInt(meta.durationHours, 10)

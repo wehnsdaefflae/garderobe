@@ -308,6 +308,10 @@
           <div class="url-text" id="guestUrl"><%= baseUrl %>/e/<%= slug %>/new</div>
           <button class="copy-button" onclick="copyUrl('guestUrl', this)">Copy</button>
         </div>
+        <div class="qr-code-container">
+          <img src="/api/qr-event/<%= slug %>" alt="Guest URL QR Code" class="qr-code" id="qrCode">
+          <div class="qr-label">QR code for guest URL (for easy NFC programming)</div>
+        </div>
       </div>
 
       <div class="url-section">
@@ -317,14 +321,13 @@
         </div>
         <div class="url-hint">Staff use this to scan QR codes and manage coats</div>
         <div class="url-box">
-          <div class="url-text" id="staffUrl"><%= baseUrl %>/e/<%= slug %>/staff</div>
+          <div class="url-text" id="staffUrl"><%= baseUrl %>/e/<%= slug %>/staff?token=<%= staffToken %></div>
           <button class="copy-button" onclick="copyUrl('staffUrl', this)">Copy</button>
         </div>
-      </div>
-
-      <div class="qr-code-container">
-        <img src="/api/qr-event/<%= slug %>" alt="Guest URL QR Code" class="qr-code" id="qrCode">
-        <div class="qr-label">QR code for guest URL (for easy NFC programming)</div>
+        <div class="qr-code-container">
+          <img src="/api/qr-staff/<%= slug %>?token=<%= staffToken %>" alt="Staff URL QR Code" class="qr-code" id="staffQrCode">
+          <div class="qr-label">QR code for staff URL (scan to bookmark)</div>
+        </div>
       </div>
 
       <div class="expiry-info">
@@ -357,7 +360,7 @@
       </div>
 
       <div class="action-buttons">
-        <a href="<%= baseUrl %>/e/<%= slug %>/staff" class="action-button button-primary">
+        <a href="<%= baseUrl %>/e/<%= slug %>/staff?token=<%= staffToken %>" class="action-button button-primary">
           Open Staff Interface
         </a>
         <a href="/" class="action-button button-secondary">

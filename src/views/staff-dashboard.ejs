@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1a202c">
   <title>Staff Dashboard - Garderobe Digital</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -82,20 +83,50 @@
     .scan-prompt {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border-radius: 12px;
-      padding: 40px 20px;
+      padding: 20px;
       text-align: center;
       margin-bottom: 20px;
       box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
 
-    .scan-icon {
-      font-size: 60px;
-      margin-bottom: 15px;
+    #qr-reader {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    #qr-reader video {
+      width: 100%;
+      border-radius: 12px;
     }
 
     .scan-text {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .scanner-status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .scanner-status.success {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: #10b981;
+      display: block;
+    }
+
+    .scanner-status.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #ef4444;
+      display: block;
     }
 
     .divider {
@@ -210,16 +241,12 @@
 
   <div class="container">
     <div class="card">
-      <div class="card-title">Ready to Scan</div>
+      <div class="card-title">Scan Guest Ticket</div>
 
       <div class="scan-prompt">
-        <div class="scan-icon">📱</div>
-        <div class="scan-text">Point your camera at a guest's QR code to begin</div>
-      </div>
-
-      <div class="instruction">
-        Open your camera app and point it at the QR code on the guest's phone.
-        The ticket will open automatically.
+        <div class="scan-text">📱 Point camera at guest's QR code</div>
+        <div id="qr-reader"></div>
+        <div class="scanner-status" id="scanner-status"></div>
       </div>
 
       <div class="divider">
@@ -275,6 +302,85 @@
     // Get slug from current URL
     const slug = window.location.pathname.split('/')[2];
 
+    // Initialize QR Code Scanner
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+    function onScanSuccess(decodedText, decodedResult) {
+      // Show success message
+      const statusEl = document.getElementById('scanner-status');
+      statusEl.className = 'scanner-status success';
+      statusEl.textContent = '✓ QR Code detected! Opening ticket...';
+
+      // Stop scanner
+      html5QrCode.stop().then(() => {
+        // Navigate to the scanned URL
+        // If it's a full URL, use it directly
+        if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
+          window.location.href = decodedText;
+        } else {
+          // Otherwise treat it as a ticket number
+          window.location.href = `/e/${slug}/ticket/${decodedText}`;
+        }
+      }).catch(err => {
+        console.error('Error stopping scanner:', err);
+        window.location.href = decodedText;
+      });
+    }
+
+    function onScanError(errorMessage) {
+      // Silently ignore scan errors (they happen constantly while scanning)
+    }
+
+    // Start scanning
+    Html5Qrcode.getCameras().then(cameras => {
+      console.log('Cameras detected:', cameras);
+      if (cameras && cameras.length) {
+        const statusEl = document.getElementById('scanner-status');
+        statusEl.className = 'scanner-status success';
+        statusEl.textContent = `Found ${cameras.length} camera(s). Starting scanner...`;
+
+        // Use back camera if available (better for scanning)
+        const cameraId = cameras.length > 1 ? cameras[cameras.length - 1].id : cameras[0].id;
+
+        html5QrCode.start(
+          cameraId,
+          config,
+          onScanSuccess,
+          onScanError
+        ).then(() => {
+          statusEl.style.display = 'none';
+        }).catch(err => {
+          statusEl.className = 'scanner-status error';
+          if (err.toString().includes('NotAllowedError') || err.toString().includes('Permission')) {
+            statusEl.innerHTML = '⚠️ Camera access denied.<br><small>Please tap "Allow" when your browser asks for camera permission, then reload this page.</small>';
+          } else if (err.toString().includes('secure') || err.toString().includes('https')) {
+            statusEl.innerHTML = '⚠️ Camera requires HTTPS.<br><small>Your browser blocks camera access on HTTP. Use manual ticket entry below, or set up HTTPS.</small>';
+          } else {
+            statusEl.innerHTML = `⚠️ Unable to start camera: ${err.message || err}<br><small>Try reloading the page or use manual ticket entry below.</small>`;
+          }
+          console.error('Unable to start scanning:', err);
+        });
+      } else {
+        const statusEl = document.getElementById('scanner-status');
+        statusEl.className = 'scanner-status error';
+        statusEl.innerHTML = '⚠️ No cameras detected.<br><small>Please check camera permissions in your browser settings, or use manual ticket entry below.</small>';
+      }
+    }).catch(err => {
+      const statusEl = document.getElementById('scanner-status');
+      statusEl.className = 'scanner-status error';
+      console.error('Error getting cameras:', err);
+
+      if (err.toString().includes('NotAllowedError') || err.toString().includes('Permission')) {
+        statusEl.innerHTML = '⚠️ Camera permission denied.<br><small>Please enable camera access in Firefox Settings → Site Permissions, then reload.</small>';
+      } else if (err.toString().includes('secure') || err.toString().includes('https')) {
+        statusEl.innerHTML = '⚠️ Camera requires secure connection (HTTPS).<br><small>Firefox requires HTTPS for camera access. Use manual ticket entry below.</small>';
+      } else {
+        statusEl.innerHTML = `⚠️ Cannot access camera: ${err.message || err}<br><small>Use manual ticket entry below, or try a different browser (Chrome works better).</small>`;
+      }
+    });
+
+    // Manual lookup form
     document.getElementById('manualLookupForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const ticketNumber = document.getElementById('ticketNumber').value;

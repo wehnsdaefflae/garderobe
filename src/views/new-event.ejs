@@ -220,6 +220,7 @@
             class="form-input"
             placeholder="e.g., Oktoberfest 2025"
             maxlength="100"
+            autofocus
           >
         </div>
 
@@ -284,29 +285,9 @@
 
         <div class="form-group">
           <label class="form-label">Event Duration</label>
-          <div class="form-hint">Event data auto-deletes after this time</div>
-          <div class="duration-options">
-            <div class="duration-option">
-              <input type="radio" id="duration12" name="duration" value="12">
-              <label for="duration12">
-                <span class="duration-label-main">12h</span>
-                <span class="duration-label-sub">Half day</span>
-              </label>
-            </div>
-            <div class="duration-option">
-              <input type="radio" id="duration24" name="duration" value="24" checked>
-              <label for="duration24">
-                <span class="duration-label-main">24h</span>
-                <span class="duration-label-sub">Full day</span>
-              </label>
-            </div>
-            <div class="duration-option">
-              <input type="radio" id="duration48" name="duration" value="48">
-              <label for="duration48">
-                <span class="duration-label-main">48h</span>
-                <span class="duration-label-sub">Two days</span>
-              </label>
-            </div>
+          <div class="info-box" style="background: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 20px; text-align: center;">
+            <div style="font-size: 48px; font-weight: 900; color: #3b82f6; margin-bottom: 10px;">72 hours</div>
+            <div style="font-size: 16px; opacity: 0.9;">Your event and all data will automatically be deleted after 3 days</div>
           </div>
         </div>
 

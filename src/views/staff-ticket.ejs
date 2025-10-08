@@ -188,7 +188,7 @@
 <body>
   <div class="header">
     <div class="brand">🎫 Garderobe Digital</div>
-    <a href="/e/<%= slug %>/staff" class="back-btn">← Dashboard</a>
+    <a href="/e/<%= slug %>/staff?token=<%= staffToken %>" class="back-btn">← Dashboard</a>
   </div>
 
   <div class="container">
@@ -314,7 +314,7 @@
 
         // Redirect to dashboard after 2 seconds
         setTimeout(() => {
-          window.location.href = `/e/${slug}/staff`;
+          window.location.href = `/e/${slug}/staff?token=<%= staffToken %>`;
         }, 2000);
 
       } catch (error) {

@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const https = require('https');
+const fs = require('fs');
 const session = require('express-session');
 const RedisStore = require('connect-redis').default;
 const crypto = require('crypto');
@@ -10,6 +12,7 @@ const { setupRoutes } = require('./routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
 
 // Security headers middleware
 app.use((req, res, next) => {
@@ -22,11 +25,12 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline'; " +
+    "script-src 'self' 'unsafe-inline' https://unpkg.com; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data:; " +
+    "img-src 'self' data: blob:; " +
     "font-src 'self'; " +
     "connect-src 'self'; " +
+    "media-src 'self' blob:; " +
     "frame-ancestors 'none'; " +
     "base-uri 'self'; " +
     "form-action 'self'"
@@ -97,19 +101,54 @@ async function startServer() {
     console.log('Setting up routes...');
     setupRoutes(app);
 
-    // Start server
+    // Start HTTP server (always)
     app.listen(PORT, () => {
+      console.log(`✓ HTTP Server running on port ${PORT}`);
+    });
+
+    // Start HTTPS server if certificates are available
+    const certPath = path.join(__dirname, '..', 'ssl', 'cert.pem');
+    const keyPath = path.join(__dirname, '..', 'ssl', 'key.pem');
+
+    if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+      const httpsOptions = {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
+      };
+
+      https.createServer(httpsOptions, app).listen(HTTPS_PORT, () => {
+        console.log(`✓ HTTPS Server running on port ${HTTPS_PORT}`);
+      });
+
+      const baseUrl = process.env.BASE_URL || `https://192.168.0.200:${HTTPS_PORT}`;
+
       console.log('='.repeat(70));
       console.log('🧥  GARDEROBE DIGITAL - Free Ephemeral Coat Check Platform');
       console.log('='.repeat(70));
-      console.log(`✓ Server running on port ${PORT}`);
+      console.log(`✓ HTTP:  http://localhost:${PORT}`);
+      console.log(`✓ HTTPS: https://192.168.0.200:${HTTPS_PORT} (for camera access)`);
       console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`✓ Domain: ${process.env.DOMAIN || 'garderobe.io'}`);
+      console.log(`✓ Base URL: ${baseUrl}`);
       console.log('='.repeat(70));
-      console.log(`\nPlatform URL: http${process.env.NODE_ENV === 'production' ? 's' : ''}://${process.env.DOMAIN || 'localhost:' + PORT}`);
+      console.log(`\nPlatform URL: ${baseUrl}`);
+      console.log(`⚠️  You'll need to accept the self-signed certificate warning`);
       console.log('='.repeat(70));
       console.log('\n✅ Platform ready! Anyone can create events now.\n');
-    });
+    } else {
+      const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+
+      console.log('='.repeat(70));
+      console.log('🧥  GARDEROBE DIGITAL - Free Ephemeral Coat Check Platform');
+      console.log('='.repeat(70));
+      console.log(`✓ HTTP Server running on port ${PORT}`);
+      console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`⚠️  HTTPS not available - SSL certificates not found`);
+      console.log(`⚠️  Camera access may not work in some browsers`);
+      console.log('='.repeat(70));
+      console.log(`\nPlatform URL: ${baseUrl}`);
+      console.log('='.repeat(70));
+      console.log('\n✅ Platform ready! Anyone can create events now.\n');
+    }
 
     // Graceful shutdown handlers
     const shutdown = async (signal) => {
