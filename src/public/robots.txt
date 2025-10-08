@@ -1,0 +1,5 @@
+# Garderobe Digital - Robots.txt
+# This is a private system, no indexing needed
+
+User-agent: *
+Disallow: /

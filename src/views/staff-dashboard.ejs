@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a202c">
+  <title>Staff Dashboard - Garderobe Digital</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .logout-btn {
+      padding: 10px 20px;
+      background: rgba(239, 68, 68, 0.8);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 1);
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .instruction {
+      text-align: center;
+      font-size: 16px;
+      margin-bottom: 20px;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    .scan-prompt {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .scan-icon {
+      font-size: 60px;
+      margin-bottom: 15px;
+    }
+
+    .scan-text {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .divider {
+      text-align: center;
+      margin: 25px 0;
+      position: relative;
+    }
+
+    .divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .divider-text {
+      position: relative;
+      background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+      padding: 0 15px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .manual-entry {
+      margin-top: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 16px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .btn-lookup {
+      width: 100%;
+      padding: 16px;
+      background: rgba(16, 185, 129, 0.8);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .btn-lookup:hover {
+      background: rgba(16, 185, 129, 1);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 480px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">🎫 <%= eventName || 'Garderobe Digital' %></div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-title">Ready to Scan</div>
+
+      <div class="scan-prompt">
+        <div class="scan-icon">📱</div>
+        <div class="scan-text">Point your camera at a guest's QR code to begin</div>
+      </div>
+
+      <div class="instruction">
+        Open your camera app and point it at the QR code on the guest's phone.
+        The ticket will open automatically.
+      </div>
+
+      <div class="divider">
+        <span class="divider-text">Can't Scan?</span>
+      </div>
+
+      <div class="manual-entry">
+        <form id="manualLookupForm">
+          <div class="form-group">
+            <label for="ticketNumber" class="form-label">Enter Ticket Number</label>
+            <input
+              type="number"
+              id="ticketNumber"
+              class="form-input"
+              placeholder="e.g., 142"
+              min="1"
+              required
+            >
+          </div>
+          <button type="submit" class="btn-lookup">
+            Look Up Ticket
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Event Statistics</div>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-value"><%= stats.ticketsIssued %></div>
+          <div class="stat-label">Tickets Issued</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= stats.used %></div>
+          <div class="stat-label">Coats Checked In</div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-value"><%= stats.available %></div>
+          <div class="stat-label">Spots Available</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value"><%= stats.percentFull %>%</div>
+          <div class="stat-label">Capacity Used</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Get slug from current URL
+    const slug = window.location.pathname.split('/')[2];
+
+    document.getElementById('manualLookupForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const ticketNumber = document.getElementById('ticketNumber').value;
+      window.location.href = `/e/${slug}/ticket/${ticketNumber}`;
+    });
+  </script>
+</body>
+</html>

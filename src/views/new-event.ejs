@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#667eea">
+  <title>Create Event - Garderobe Digital</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .back-link {
+      display: inline-block;
+      color: #fff;
+      text-decoration: none;
+      margin-bottom: 20px;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .back-link:hover {
+      opacity: 1;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      opacity: 0.9;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .location-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .duration-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .duration-option {
+      position: relative;
+    }
+
+    .duration-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .duration-option label {
+      display: block;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .duration-option input[type="radio"]:checked + label {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .duration-label-main {
+      font-size: 18px;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .duration-label-sub {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+      border: none;
+      border-radius: 12px;
+      color: #667eea;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      margin-top: 10px;
+    }
+
+    .submit-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      background: linear-gradient(135deg, #fff, rgba(255,255,255,0.95));
+    }
+
+    .submit-button:active {
+      transform: translateY(0);
+    }
+
+    .info-box {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 20px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .card {
+        padding: 30px 20px;
+      }
+
+      .location-inputs {
+        grid-template-columns: 1fr;
+      }
+
+      .duration-options {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-link">← Back to Home</a>
+
+    <div class="card">
+      <h1>Create Your Event</h1>
+      <div class="subtitle">Setup takes 30 seconds</div>
+
+      <form method="POST" action="/api/events" id="eventForm">
+        <div class="form-group">
+          <label for="eventName" class="form-label">Event Name (Optional)</label>
+          <div class="form-hint">For your reference only, not shown to guests</div>
+          <input
+            type="text"
+            id="eventName"
+            name="eventName"
+            class="form-input"
+            placeholder="e.g., Oktoberfest 2025"
+            maxlength="100"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Location Layout</label>
+          <div class="form-hint">Configure your physical coat check space</div>
+          <div class="location-inputs">
+            <div>
+              <input
+                type="text"
+                id="rackStart"
+                name="rackStart"
+                class="form-input"
+                placeholder="Rack Start (A)"
+                value="A"
+                required
+                maxlength="1"
+                pattern="[A-Z]"
+              >
+            </div>
+            <div>
+              <input
+                type="text"
+                id="rackEnd"
+                name="rackEnd"
+                class="form-input"
+                placeholder="Rack End (F)"
+                value="F"
+                required
+                maxlength="1"
+                pattern="[A-Z]"
+              >
+            </div>
+            <div>
+              <input
+                type="number"
+                id="spotStart"
+                name="spotStart"
+                class="form-input"
+                placeholder="Spot Start"
+                value="1"
+                required
+                min="1"
+                max="999"
+              >
+            </div>
+            <div>
+              <input
+                type="number"
+                id="spotEnd"
+                name="spotEnd"
+                class="form-input"
+                placeholder="Spot End"
+                value="50"
+                required
+                min="1"
+                max="999"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Event Duration</label>
+          <div class="form-hint">Event data auto-deletes after this time</div>
+          <div class="duration-options">
+            <div class="duration-option">
+              <input type="radio" id="duration12" name="duration" value="12">
+              <label for="duration12">
+                <span class="duration-label-main">12h</span>
+                <span class="duration-label-sub">Half day</span>
+              </label>
+            </div>
+            <div class="duration-option">
+              <input type="radio" id="duration24" name="duration" value="24" checked>
+              <label for="duration24">
+                <span class="duration-label-main">24h</span>
+                <span class="duration-label-sub">Full day</span>
+              </label>
+            </div>
+            <div class="duration-option">
+              <input type="radio" id="duration48" name="duration" value="48">
+              <label for="duration48">
+                <span class="duration-label-main">48h</span>
+                <span class="duration-label-sub">Two days</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Security Check</label>
+          <div class="form-hint">Prove you're human (prevents automated abuse)</div>
+          <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+            <div style="font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 10px;">
+              What is <%= challenge.question %>?
+            </div>
+            <input
+              type="number"
+              id="challengeAnswer"
+              name="challengeAnswer"
+              class="form-input"
+              placeholder="Your answer"
+              required
+              style="text-align: center; font-size: 20px; font-weight: 700;"
+            >
+            <input type="hidden" name="challengeId" value="<%= challenge.challengeId %>">
+          </div>
+        </div>
+
+        <button type="submit" class="submit-button">
+          Create Event
+        </button>
+
+        <div class="info-box">
+          ℹ️ <strong>No registration required!</strong> You'll get unique URLs to copy immediately.
+          Save them - we won't send them to you.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Auto-uppercase rack inputs
+    document.getElementById('rackStart').addEventListener('input', function(e) {
+      e.target.value = e.target.value.toUpperCase();
+    });
+    document.getElementById('rackEnd').addEventListener('input', function(e) {
+      e.target.value = e.target.value.toUpperCase();
+    });
+
+    // Form validation
+    document.getElementById('eventForm').addEventListener('submit', function(e) {
+      const rackStart = document.getElementById('rackStart').value;
+      const rackEnd = document.getElementById('rackEnd').value;
+      const spotStart = parseInt(document.getElementById('spotStart').value);
+      const spotEnd = parseInt(document.getElementById('spotEnd').value);
+
+      if (rackStart > rackEnd) {
+        e.preventDefault();
+        alert('Rack Start must come before Rack End (e.g., A before F)');
+        return;
+      }
+
+      if (spotStart > spotEnd) {
+        e.preventDefault();
+        alert('Spot Start must be less than Spot End');
+        return;
+      }
+
+      const totalLocations = (rackEnd.charCodeAt(0) - rackStart.charCodeAt(0) + 1) * (spotEnd - spotStart + 1);
+      if (totalLocations > 10000) {
+        e.preventDefault();
+        alert(`Too many locations (${totalLocations}). Maximum is 10,000.`);
+        return;
+      }
+    });
+  </script>
+</body>
+</html>

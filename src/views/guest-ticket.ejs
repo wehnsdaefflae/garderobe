@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <title>Ticket #<%= ticketId %> - Garderobe Digital</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .header {
+      margin-bottom: 30px;
+    }
+
+    .brand {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+
+    .ticket-number {
+      font-size: 120px;
+      font-weight: 900;
+      line-height: 1;
+      margin: 20px 0;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .ticket-label {
+      font-size: 18px;
+      font-weight: 500;
+      opacity: 0.9;
+      margin-bottom: 10px;
+    }
+
+    .qr-container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin: 30px 0;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .qr-code {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .warning-box {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 15px;
+      padding: 25px;
+      margin-top: 30px;
+    }
+
+    .warning-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .warning-icon {
+      font-size: 24px;
+    }
+
+    .warning-text {
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 10px 0;
+      opacity: 0.95;
+    }
+
+    .warning-text strong {
+      font-weight: 700;
+    }
+
+    .bookmark-hint {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    @media (max-width: 480px) {
+      .ticket-number {
+        font-size: 80px;
+      }
+
+      .warning-text {
+        font-size: 14px;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">Garderobe Digital</div>
+      <div class="ticket-label">Your Ticket Number</div>
+      <div class="ticket-number">#<%= ticketId %></div>
+    </div>
+
+    <div class="qr-container">
+      <img src="/e/<%= slug %>/api/qr/<%= ticketId %>?token=<%= token %>" alt="QR Code" class="qr-code" id="qrCode">
+    </div>
+
+    <div class="warning-box">
+      <div class="warning-title">
+        <span class="warning-icon">⚠️</span>
+        <span>Important - Save This Page!</span>
+      </div>
+      <div class="warning-text">
+        <strong>This is your only way to retrieve your coat.</strong>
+      </div>
+      <div class="warning-text">
+        📱 Do not close this page or your browser
+      </div>
+      <div class="warning-text">
+        🔒 Do not share your screen with anyone
+      </div>
+      <div class="warning-text">
+        💾 You can find it in your browser history if needed
+      </div>
+
+      <div class="bookmark-hint">
+        💡 Tip: Bookmark this page or add it to your home screen for safekeeping
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Prevent accidental navigation away
+    window.addEventListener('beforeunload', function (e) {
+      e.preventDefault();
+      e.returnValue = '';
+    });
+
+    // Add to home screen prompt for iOS/Android
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('Running as standalone app');
+    }
+  </script>
+</body>
+</html>
