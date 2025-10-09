@@ -65,7 +65,7 @@ wardrobe_system/
 
 **`src/server.js`** - Express app initialization
 - Connects to Redis
-- Sets up sessions
+- Sets up security headers
 - Loads routes
 - Starts HTTP server
 
@@ -147,10 +147,10 @@ NFC Tap → /e/:slug/new → Generate ticket + token
 
 ### Staff Flow
 ```
-Open /e/:slug/staff → Set session cookie
-→ Scan QR → /e/:slug/ticket/:id?token=xxx
-→ Detect staff session → Show action buttons
-→ POST /e/:slug/api/check-in → Assign location
+Open /e/:slug/staff?token=xxx → Validate staff token
+→ Scan QR → /e/:slug/ticket/:id?token=xxx&staffToken=xxx
+→ Detect staff token → Show action buttons
+→ POST /e/:slug/api/check-in (with staffToken) → Assign location
 → Display location to staff
 ```
 
@@ -179,10 +179,10 @@ ratelimit:events:{ip} = INTEGER (expires: 1 hour)
 
 ## Key Features
 
-### No Authentication
+### No Traditional Authentication
 - Security through unguessable slugs (~95 bits entropy)
-- Staff detected via session cookies per event
-- No passwords, no login forms
+- Staff detected via URL tokens per event
+- No passwords, no login forms, no sessions
 
 ### Ephemeral Data
 - All Redis keys have TTL
@@ -202,16 +202,18 @@ ratelimit:events:{ip} = INTEGER (expires: 1 hour)
 ## Environment Variables
 
 ```bash
-# Required
-SESSION_SECRET=random_secret_here
+# Required (for production)
+DOMAIN=garderobe.io
+BASE_URL=https://garderobe.io
 
 # Optional
-DOMAIN=garderobe.io
 PORT=3000
 NODE_ENV=production
 REDIS_URL=redis://redis:6379
 MAX_EVENTS_PER_IP_PER_HOUR=10
 MAX_TICKETS_PER_EVENT=1000
+MAX_ACTIVE_EVENTS=1000
+MAX_EVENTS_PER_HOUR_GLOBAL=100
 ```
 
 ## Quick Commands
@@ -239,13 +241,14 @@ docker-compose down
 **Runtime:**
 - express - Web framework
 - redis - Data store client
-- express-session - Session management
-- connect-redis - Redis session store
 - qrcode - QR code generation
+- ejs - Template engine
 - dotenv - Environment config
 
 **Dev:**
 - nodemon - Auto-reload in development
+- jest - Testing framework
+- supertest - HTTP testing
 
 ## URLs Reference
 
@@ -257,8 +260,8 @@ Event success:    /event-created/:slug
 Guest ticket:     /e/:slug/new
 Guest view:       /e/:slug/ticket/:id?token=xxx
 
-Staff interface:  /e/:slug/staff
-Staff view:       /e/:slug/ticket/:id (with staff session)
+Staff interface:  /e/:slug/staff?token=xxx
+Staff view:       /e/:slug/ticket/:id?token=xxx&staffToken=xxx
 
 API:
 - POST /api/events
@@ -276,8 +279,8 @@ Health:           /health
 
 1. **Event Isolation** - Each event completely separated
 2. **Slug Security** - 16 chars base64url = unguessable
-3. **Token Security** - 16 chars per ticket
-4. **Session Scoping** - Staff cookies per event
+3. **Token Security** - 16 chars per guest ticket, 32 chars per staff token
+4. **Token-Based Auth** - No sessions, no cookies for authentication (v4.3.0+)
 5. **Rate Limiting** - Prevent abuse
 6. **Ephemeral Data** - Nothing stored long-term
 7. **No Personal Data** - GDPR compliant
@@ -293,6 +296,6 @@ Health:           /health
 
 ---
 
-**Version:** 4.0.0
+**Version:** 4.3.0
 **License:** MIT
-**Last Updated:** October 8, 2025
+**Last Updated:** October 9, 2025

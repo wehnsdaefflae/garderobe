@@ -130,7 +130,7 @@ Traditional systems use passwords to secure events. Garderobe Digital uses a dif
 **Backend:**
 - Node.js 18 + Express.js
 - Redis for data storage (with TTL-based auto-deletion)
-- Session-based staff detection per event
+- Token-based authentication (no sessions as of v4.3.0)
 
 **Deployment:**
 - Docker + Docker Compose
@@ -171,7 +171,7 @@ cd garderobe-digital
 
 # 2. Configure
 cp .env.example .env
-nano .env  # Set SESSION_SECRET
+nano .env  # Set BASE_URL and DOMAIN
 
 # 3. Deploy
 docker-compose up -d
@@ -188,6 +188,7 @@ open http://localhost:3000
 
 # 2. Update .env
 DOMAIN=garderobe.yourdomain.com
+BASE_URL=https://garderobe.yourdomain.com
 NODE_ENV=production
 
 # 3. Enable HTTPS (edit docker-compose.yml)
@@ -215,9 +216,7 @@ Edit `.env`:
 # Server
 PORT=3000
 DOMAIN=garderobe.yourdomain.com
-
-# Session security (REQUIRED - generate with: openssl rand -base64 32)
-SESSION_SECRET=your_random_secret_here
+BASE_URL=https://garderobe.yourdomain.com
 
 # Platform limits
 MAX_ACTIVE_EVENTS=1000              # Total concurrent events
@@ -266,12 +265,12 @@ NODE_ENV=production
 - Referrer-Policy: strict-origin-when-cross-origin
 - Permissions-Policy: Disables geolocation, camera, microphone
 
-### Session Security
+### Token-Based Authentication (v4.3.0+)
 
-- HTTP-only cookies (no JavaScript access)
-- Secure flag in production (HTTPS only)
-- SameSite=Strict (CSRF protection)
-- 24-hour session lifetime
+- Pure token-based authentication (no sessions, no cookies)
+- Staff tokens passed in URL query parameters
+- 32-character cryptographically secure tokens
+- Simpler and more reliable across all browsers
 
 ### Data Protection
 
@@ -344,7 +343,7 @@ A: 16-character base64url = ~95 bits of entropy = effectively unguessable.
 A: System collects no personal data. Only coat locations and ticket numbers. All auto-deletes.
 
 **Q: Can staff see other events?**
-A: No. Staff sessions are scoped to specific events. Complete isolation.
+A: No. Staff tokens are unique per event. Complete isolation.
 
 ## Contributing
 
@@ -367,11 +366,13 @@ npm install
 # Start development mode (with auto-reload)
 npm run dev
 
-# Format code
-npm run format
+# Run tests
+npm test              # All tests
+npm run test:unit     # Unit tests only
+npm run test:e2e      # Browser tests only
 
-# Run tests (if we add them!)
-npm test
+# Test coverage
+npm run test:coverage
 ```
 
 ### Code Style
@@ -431,8 +432,9 @@ Built with ❤️ for the events community.
 
 ### For Developers
 
-- **API Docs**: See `ARCHITECTURE.md`
-- **Contributing**: See `CONTRIBUTING.md`
+- **Development Guide**: See `CLAUDE.md`
+- **Testing Guide**: See `TESTING.md`
+- **Security Analysis**: See `SECURITY.md`
 - **Changelog**: See `CHANGELOG.md`
 
 ## Community
@@ -444,8 +446,6 @@ Built with ❤️ for the events community.
 
 ---
 
-**Version**: 4.0.1 (Security Hardened)
-**Last Updated**: October 8, 2025
+**Version**: 4.3.0 (Staff View Fix & Architecture Improvement)
+**Last Updated**: October 9, 2025
 **Status**: ✅ Production Ready
-
-**Made possible by**: The belief that great software should be simple, free, and ephemeral.

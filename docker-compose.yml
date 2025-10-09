@@ -28,7 +28,6 @@ services:
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=3000
       - REDIS_URL=redis://redis:6379
-      - SESSION_SECRET=${SESSION_SECRET}
       - BASE_URL=${BASE_URL}
       - MAX_ACTIVE_EVENTS=${MAX_ACTIVE_EVENTS:-1000}
       - MAX_EVENTS_PER_HOUR_GLOBAL=${MAX_EVENTS_PER_HOUR_GLOBAL:-100}

@@ -50,13 +50,12 @@ npm start
 
 ### Security Model: No Traditional Authentication
 
-The platform uses **cryptographic URL slugs** instead of passwords:
+The platform uses **cryptographic URL slugs and tokens** instead of passwords:
 - **Event slugs**: 16-char base64url (~95 bits entropy) = effectively unguessable
 - **Ticket tokens**: 16-char base64url per ticket (guest retrieval)
 - **Staff tokens**: 32-char base64url per event (staff access)
-- **Staff sessions**: Cookie-based per event (set when accessing staff URL)
 
-Staff detection logic (routes.js:119): Check if `req.session['staff_${slug}']` exists. Staff URLs include `?token=` query param that sets this session.
+**Pure Token-Based Authentication (v4.3.0)**: No sessions, no cookies for authentication. Staff token passed in URL query params, validated on every request. Simpler and more reliable than session-based auth.
 
 ### Data Flow & Key Interactions
 
@@ -76,12 +75,12 @@ Staff detection logic (routes.js:119): Check if `req.session['staff_${slug}']` e
 5. Guest sees large ticket number + QR code (for later retrieval)
 
 **Staff Flow** (Scanning & Check-in):
-1. Staff opens `/e/:slug/staff?token=xxx` → Sets `req.session['staff_${slug}'] = true`
+1. Staff opens `/e/:slug/staff?token=xxx` → Validates staffToken, shows dashboard
 2. Scans guest's QR code → Loads `/e/:slug/ticket/:id?token=xxx&staffToken=xxx`
-3. Server renders skeleton HTML (no status/buttons yet)
+3. Server validates staffToken, renders skeleton HTML (no status/buttons yet)
 4. JavaScript fetches fresh status from `/e/:slug/api/status/:id?staffToken=xxx`
 5. Client-side renders correct buttons based on API response (Check In / Check Out)
-6. Staff taps "Check In" → `POST /e/:slug/api/check-in` with staffToken
+6. Staff taps "Check In" → `POST /e/:slug/api/check-in` with staffToken in body
 7. Server atomically pops location from available pool (Lua script in location-manager.js)
 8. Updates ticket with location, client reloads status, displays "PLACE COAT IN C-15"
 
@@ -112,8 +111,8 @@ ratelimit:challenges:{ip}            # INTEGER: Challenge requests (expires 1h)
 ### File Organization
 
 **Core Logic**:
-- `src/server.js` - Express setup, security headers, session middleware, startup
-- `src/routes.js` - All HTTP endpoints (guest, staff, API)
+- `src/server.js` - Express setup, security headers, startup (no sessions as of v4.3.0)
+- `src/routes.js` - All HTTP endpoints (guest, staff, API) with token-based auth
 - `src/event-manager.js` - Event CRUD, slug generation
 - `src/location-manager.js` - Atomic location assignment (Lua scripts)
 - `src/challenge.js` - Math challenge bot prevention
@@ -140,11 +139,11 @@ ratelimit:challenges:{ip}            # INTEGER: Challenge requests (expires 1h)
 - Max 10 events per IP per hour
 - Max 1000 tickets per event
 
-**Security Headers** (server.js:18-55):
+**Security Headers** (server.js:14-50):
 - HSTS (production only): Forces HTTPS
 - CSP: Prevents XSS, restricts resource loading
 - X-Frame-Options: DENY (clickjacking prevention)
-- SameSite=Strict cookies (CSRF protection)
+- X-Content-Type-Options: nosniff (MIME sniffing prevention)
 - See SECURITY.md for complete threat model
 
 ### Common Development Patterns
@@ -166,13 +165,13 @@ ratelimit:challenges:{ip}            # INTEGER: Challenge requests (expires 1h)
 - Use Lua scripts for atomic operations (see `getNextLocation`)
 - Never use multiple Redis commands for assignment - race condition risk
 
-**Testing staff authentication**:
-- Staff session is per-event: `req.session['staff_${slug}']`
-- Set by visiting `/e/:slug/staff?token={staffToken}`
+**Testing staff authentication (v4.3.0+)**:
+- Pure token-based: No sessions, no cookies for auth
 - Staff token stored in `event:${slug}:meta` hash
-- **Token fallback (v4.3.0)**: `requireStaffAuth` middleware accepts `staffToken` in body/query if session not present
-- All staff API endpoints support both session and token-based auth
-- Staff can view any ticket in their event without guest token
+- `requireStaffAuth` middleware checks `staffToken` in body or query params
+- All staff endpoints require valid staffToken matching event's staffToken
+- Staff can view any ticket in their event by passing staffToken (no guest token needed)
+- Token passed via URL query `?staffToken=xxx` or request body `{ staffToken: 'xxx' }`
 
 **Working with TTL**:
 - All event-related keys must have same TTL as event
@@ -183,7 +182,6 @@ ratelimit:challenges:{ip}            # INTEGER: Challenge requests (expires 1h)
 ## Environment Variables
 
 Required for production:
-- `SESSION_SECRET` - Cryptographically random string (generate with `openssl rand -base64 32`)
 - `BASE_URL` - Full platform URL (e.g., `https://garderobe.io`)
 - `DOMAIN` - Domain for Caddy HTTPS (e.g., `garderobe.io`)
 
@@ -209,7 +207,7 @@ Optional configuration:
 - Atomic operations for location assignment
 - Security headers in production
 - Token validation on guest ticket access
-- Staff session checks for staff endpoints
+- Staff token validation for staff endpoints (no sessions)
 
 **Mobile-First Design**:
 - All views must work on small screens (primary use case)

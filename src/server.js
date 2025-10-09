@@ -2,9 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
-const session = require('express-session');
-const RedisStore = require('connect-redis').default;
-const crypto = require('crypto');
 const path = require('path');
 
 const { initRedis, getRedisClient, closeRedis } = require('./redis');
@@ -74,30 +71,8 @@ async function startServer() {
     // Initialize Redis
     console.log('Connecting to Redis...');
     await initRedis();
-    const redis = getRedisClient();
 
-    // Setup session store and middleware
-    console.log('Setting up session management...');
-    const sessionStore = new RedisStore({ client: redis });
-
-    const sessionMiddleware = session({
-      store: sessionStore,
-      secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        sameSite: 'lax' // Allows cookies on QR code scans while maintaining CSRF protection
-      },
-      name: 'garderobe.sid'
-    });
-
-    // Apply session middleware
-    app.use(sessionMiddleware);
-
-    // Setup all routes (must be done after session middleware)
+    // Setup all routes
     console.log('Setting up routes...');
     setupRoutes(app);
 

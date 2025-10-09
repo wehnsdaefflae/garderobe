@@ -18,10 +18,11 @@
 - ✅ Status and buttons rendered client-side based on API response
 - ✅ **Result:** Even if HTML is cached, data is always fresh from API
 
-**Staff Authentication:**
-- ✅ Enhanced `requireStaffAuth` middleware to accept staffToken in body/query as fallback
-- ✅ All staff API endpoints (check-in, check-out, status) now support token-based auth
-- ✅ Works reliably even when session cookies aren't preserved across navigation
+**Staff Authentication (Simplified):**
+- ✅ Removed session-based authentication entirely (express-session, connect-redis)
+- ✅ Pure token-based authentication via staffToken in URL/query/body
+- ✅ Simpler architecture, more reliable across all browsers and contexts
+- ✅ No more cookie issues, works with any navigation pattern
 
 ### UX Improvements
 
@@ -41,10 +42,14 @@
 ### Technical Details
 
 **Modified Files:**
-- `src/routes.js` - Removed status/location from staff-ticket template rendering, kept debug logging
-- `src/routes.js` - Enhanced `requireStaffAuth` middleware with token fallback (lines 738-768)
+- `src/server.js` - Removed express-session and connect-redis setup, simplified startup
+- `src/routes.js` - Removed `isStaffForEvent()` helper, simplified authentication to pure token-based
+- `src/routes.js` - Removed status/location from staff-ticket template rendering
+- `src/routes.js` - Simplified `requireStaffAuth` middleware to only check tokens (no session fallback)
 - `src/views/staff-ticket.ejs` - Complete rewrite: skeleton HTML + client-side API fetching
 - `src/views/staff-ticket.ejs` - Improved check-in/checkout flow with better state management
+- `package.json` - Removed express-session and connect-redis dependencies
+- `.env.example` - Removed SESSION_SECRET (no longer needed)
 
 **Key Insight:**
 Modern browsers aggressively cache pages for back/forward navigation (bfcache). No amount of cache headers reliably prevents this. The correct solution is **separating data from presentation** - render static HTML, fetch dynamic data client-side via API. This is how SPAs avoid caching issues.
