@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1a202c">
   <title>Staff Dashboard - Garderobe Digital</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="/html5-qrcode.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -91,14 +91,24 @@
 
     #qr-reader {
       width: 100%;
+      min-height: 300px;
       border-radius: 12px;
       overflow: hidden;
       background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
     }
 
     #qr-reader video {
       width: 100%;
       border-radius: 12px;
+    }
+
+    #qr-reader-loading {
+      text-align: center;
+      padding: 40px 20px;
     }
 
     .scan-text {
@@ -245,7 +255,11 @@
 
       <div class="scan-prompt">
         <div class="scan-text">📱 Point camera at guest's QR code</div>
-        <div id="qr-reader"></div>
+        <div id="qr-reader">
+          <div id="qr-reader-loading">
+            <p>⏳ Loading camera...</p>
+          </div>
+        </div>
         <div class="scanner-status" id="scanner-status"></div>
       </div>
 
@@ -299,8 +313,18 @@
   </div>
 
   <script>
-    // Get slug from current URL
-    const slug = window.location.pathname.split('/')[2];
+    // Get slug and staff token from server
+    const slug = '<%= slug %>';
+    const staffToken = '<%= staffToken %>';
+
+    // Check if library loaded
+    if (typeof Html5Qrcode === 'undefined') {
+      const statusEl = document.getElementById('scanner-status');
+      statusEl.className = 'scanner-status error';
+      statusEl.innerHTML = '⚠️ Scanner library failed to load.<br><small>Check your internet connection and try reloading the page. Use manual ticket entry below.</small>';
+      document.getElementById('qr-reader-loading').innerHTML = '<p style="color: #ef4444;">❌ Scanner unavailable</p>';
+      throw new Error('Html5Qrcode library not loaded');
+    }
 
     // Initialize QR Code Scanner
     const html5QrCode = new Html5Qrcode("qr-reader");
@@ -314,17 +338,45 @@
 
       // Stop scanner
       html5QrCode.stop().then(() => {
-        // Navigate to the scanned URL
-        // If it's a full URL, use it directly
+        // Parse the ticket URL to extract path and query string
+        // Guest tickets are: https://domain/e/{slug}/ticket/{id}?token=xxx
+        let ticketUrl;
+
         if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
-          window.location.href = decodedText;
+          // Extract path + query string from full URL (keeps token!)
+          try {
+            const url = new URL(decodedText);
+            ticketUrl = url.pathname + url.search; // Gets /e/{slug}/ticket/{id}?token=xxx
+          } catch (e) {
+            // Fallback to full URL if parsing fails
+            window.location.href = decodedText;
+            return;
+          }
+        } else if (decodedText.startsWith('/')) {
+          // Already a path
+          ticketUrl = decodedText;
         } else {
-          // Otherwise treat it as a ticket number
-          window.location.href = `/e/${slug}/ticket/${decodedText}`;
+          // Just a ticket number
+          ticketUrl = `/e/${slug}/ticket/${decodedText}`;
         }
+
+        // Add staff token to URL for re-authentication
+        const separator = ticketUrl.includes('?') ? '&' : '?';
+        const staffUrl = ticketUrl + separator + 'staffToken=' + staffToken;
+
+        // Navigate using relative URL with staff token
+        window.location.href = staffUrl;
       }).catch(err => {
         console.error('Error stopping scanner:', err);
-        window.location.href = decodedText;
+        // Extract path + query even on error
+        try {
+          const url = new URL(decodedText);
+          const ticketPath = url.pathname + url.search;
+          const sep = ticketPath.includes('?') ? '&' : '?';
+          window.location.href = ticketPath + sep + 'staffToken=' + staffToken;
+        } catch (e) {
+          window.location.href = decodedText;
+        }
       });
     }
 
@@ -334,6 +386,9 @@
 
     // Start scanning
     Html5Qrcode.getCameras().then(cameras => {
+      // Clear loading message
+      const loadingEl = document.getElementById('qr-reader-loading');
+      if (loadingEl) loadingEl.style.display = 'none';
       console.log('Cameras detected:', cameras);
       if (cameras && cameras.length) {
         const statusEl = document.getElementById('scanner-status');

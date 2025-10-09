@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#667eea">
-  <meta name="description" content="Free NFC coat check system for events. Create your temporary wardrobe management system in 30 seconds.">
-  <title>Garderobe Digital - Free NFC Coat Check for Events</title>
+  <meta name="description" content="Free QR code coat check system for events. NFC ready. Create your temporary wardrobe management system in 30 seconds.">
+  <title>Garderobe Digital - QR Code Coat Check for Events</title>
   <style>
     * {
       margin: 0;
@@ -145,6 +145,12 @@
       border-bottom: 1px solid rgba(255,255,255,0.5);
     }
 
+    .version {
+      margin-top: 15px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
     @media (max-width: 640px) {
       h1 {
         font-size: 32px;
@@ -164,7 +170,7 @@
   <div class="container">
     <div class="logo">🧥</div>
     <h1>Garderobe Digital</h1>
-    <div class="tagline">Free NFC Coat Check for Events</div>
+    <div class="tagline">QR Code Coat Check for Events</div>
 
     <a href="/new" class="cta-button">Create New Event</a>
 
@@ -173,12 +179,6 @@
         <div class="feature-icon">⚡</div>
         <div class="feature-title">30-Second Setup</div>
         <div class="feature-desc">No registration required</div>
-      </div>
-
-      <div class="feature">
-        <div class="feature-icon">🆓</div>
-        <div class="feature-title">Completely Free</div>
-        <div class="feature-desc">No hidden costs</div>
       </div>
 
       <div class="feature">
@@ -220,9 +220,10 @@
 
     <div class="footer">
       <p>
-        Open Source • <a href="https://github.com/garderobe-digital" target="_blank">GitHub</a> •
-        Built with ❤️ for the events community
+        Open Source • <a href="https://github.com/wehnsdaefflae/garderobe" target="_blank">GitHub</a> •
+        Built in Berlin with ❤️ for the events community
       </p>
+      <p class="version">v<%= version %></p>
     </div>
   </div>
 </body>

@@ -192,37 +192,16 @@
   </div>
 
   <div class="container">
-    <div class="ticket-card <%= status %>" id="ticketCard">
-      <div class="ticket-status" id="statusLabel">
-        <% if (status === 'new') { %>
-          Ready for Check-In
-        <% } else if (status === 'checked_in') { %>
-          Checked In
-        <% } else { %>
-          Already Checked Out
-        <% } %>
-      </div>
+    <div class="ticket-card" id="ticketCard">
+      <div class="ticket-status" id="statusLabel">Loading...</div>
 
       <div class="ticket-number">#<%= ticketId %></div>
 
       <div id="contentArea">
-        <% if (status === 'new') { %>
-          <div class="action-message">Ready to check in this coat</div>
-          <button class="btn-action btn-checkin" onclick="checkIn()">
-            ✓ Check In Coat
-          </button>
-        <% } else if (status === 'checked_in') { %>
-          <div class="action-message">Retrieve coat from:</div>
-          <div class="location-display" id="locationDisplay"><%= location %></div>
-          <button class="btn-action btn-checkout" onclick="checkOut()">
-            ✓ Check Out Coat
-          </button>
-        <% } else { %>
-          <div class="action-message">This ticket has already been used and checked out.</div>
-        <% } %>
+        <div class="loading" style="display: block; margin: 40px 0;">⏳ Loading ticket status...</div>
       </div>
 
-      <div class="loading" id="loading">Processing...</div>
+      <div class="loading" id="loading" style="display: none;">Processing...</div>
       <div class="error-message" id="error" style="display: none;"></div>
     </div>
   </div>
@@ -230,6 +209,61 @@
   <script>
     const slug = '<%= slug %>';
     const ticketId = <%= ticketId %>;
+    const staffToken = '<%= staffToken %>';
+
+    // Load ticket status from API on page load
+    async function loadTicketStatus() {
+      try {
+        const response = await fetch(`/e/${slug}/api/status/${ticketId}?staffToken=${staffToken}`, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to load ticket status');
+        }
+
+        const data = await response.json();
+        renderTicketUI(data.status, data.location);
+
+      } catch (error) {
+        document.getElementById('error').textContent = '⚠️ ' + error.message;
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('contentArea').innerHTML = '<div class="action-message">Unable to load ticket status</div>';
+      }
+    }
+
+    function renderTicketUI(status, location) {
+      const ticketCard = document.getElementById('ticketCard');
+      const statusLabel = document.getElementById('statusLabel');
+      const contentArea = document.getElementById('contentArea');
+
+      ticketCard.className = 'ticket-card ' + status;
+
+      if (status === 'new') {
+        statusLabel.textContent = 'Ready for Check-In';
+        contentArea.innerHTML = `
+          <div class="action-message">Ready to check in this coat</div>
+          <button class="btn-action btn-checkin" onclick="checkIn()">
+            ✓ Check In Coat
+          </button>
+        `;
+      } else if (status === 'checked_in') {
+        statusLabel.textContent = 'Checked In';
+        contentArea.innerHTML = `
+          <div class="action-message">Retrieve coat from:</div>
+          <div class="location-display" id="locationDisplay">${location}</div>
+          <button class="btn-action btn-checkout" onclick="checkOut()">
+            ✓ Check Out Coat
+          </button>
+        `;
+      } else {
+        statusLabel.textContent = 'Already Checked Out';
+        contentArea.innerHTML = '<div class="action-message">This ticket has already been used and checked out.</div>';
+      }
+    }
+
+    // Load status when page loads
+    loadTicketStatus();
 
     async function checkIn() {
       const btn = event.target;
@@ -240,7 +274,7 @@
         const response = await fetch(`/e/${slug}/api/check-in`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ticketId })
+          body: JSON.stringify({ ticketId, staffToken })
         });
 
         const data = await response.json();
@@ -254,19 +288,23 @@
           navigator.vibrate(200);
         }
 
-        // Update UI
+        // Update UI to checked-in state
         document.getElementById('statusLabel').textContent = 'Checked In';
         document.getElementById('ticketCard').className = 'ticket-card checked-in success-pulse';
-        document.getElementById('contentArea').innerHTML = `
+
+        const contentArea = document.getElementById('contentArea');
+        contentArea.innerHTML = `
           <div class="action-message" style="color: #10b981; font-size: 24px; font-weight: 700;">
-            ✓ SUCCESS
+            ✓ CHECKED IN
           </div>
           <div class="action-message">Place coat in:</div>
-          <div class="location-display">${data.location}</div>
-          <button class="btn-action btn-checkout" onclick="checkOut()" style="margin-top: 30px;">
-            ✓ Check Out Coat
-          </button>
+          <div class="location-display" style="font-size: 48px; font-weight: 900; margin: 30px 0; padding: 30px; background: rgba(0, 0, 0, 0.3); border-radius: 15px; letter-spacing: 2px;">${data.location}</div>
         `;
+
+        // After brief moment, show checkout button
+        setTimeout(async () => {
+          await loadTicketStatus(); // Shows checkout button
+        }, 2000);
 
       } catch (error) {
         document.getElementById('error').textContent = '⚠️ ' + error.message;
@@ -286,7 +324,7 @@
         const response = await fetch(`/e/${slug}/api/check-out`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ticketId })
+          body: JSON.stringify({ ticketId, staffToken })
         });
 
         const data = await response.json();
@@ -300,22 +338,23 @@
           navigator.vibrate([100, 50, 100]);
         }
 
-        // Update UI
-        document.getElementById('statusLabel').textContent = 'Checked Out';
-        document.getElementById('ticketCard').className = 'ticket-card checked-out success-pulse';
+        // Reload status from server
+        await loadTicketStatus();
+
+        // Show success message and redirect
         document.getElementById('contentArea').innerHTML = `
-          <div class="action-message" style="color: #10b981; font-size: 24px; font-weight: 700;">
+          <div class="action-message" style="color: #10b981; font-size: 24px; font-weight: 700; animation: pulse 0.5s ease;">
             ✓ COAT RETURNED
           </div>
           <div class="action-message" style="margin-top: 20px;">
-            Transaction complete. This ticket has been checked out.
+            Returning to dashboard...
           </div>
         `;
 
-        // Redirect to dashboard after 2 seconds
+        // Redirect to dashboard after brief delay
         setTimeout(() => {
           window.location.href = `/e/${slug}/staff?token=<%= staffToken %>`;
-        }, 2000);
+        }, 1500);
 
       } catch (error) {
         document.getElementById('error').textContent = '⚠️ ' + error.message;

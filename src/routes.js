@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const os = require('os');
 const QRCode = require('qrcode');
+const { version } = require('../package.json');
 const { getRedisClient } = require('./redis');
 const { createEvent, getEvent, eventExists, buildLocationSchema } = require('./event-manager');
 const { initializeLocations, getNextLocation, returnLocation, getCapacityStats } = require('./location-manager');
@@ -92,6 +93,8 @@ async function getTicket(slug, ticketId) {
     return null;
   }
 
+  console.log(`[GET TICKET] Slug: ${slug}, ID: ${ticketId}, Redis data:`, data);
+
   return {
     id: ticketId,
     token: data.token,
@@ -148,7 +151,7 @@ function setupRoutes(app) {
    * GET / - Landing page
    */
   app.get('/', (req, res) => {
-    res.render('index');
+    res.render('index', { version });
   });
 
   /**
@@ -453,7 +456,24 @@ function setupRoutes(app) {
       const { slug, id } = req.params;
       const ticketId = parseInt(id, 10);
       const providedToken = req.query.token;
-      const isStaff = isStaffForEvent(req, slug);
+      const staffToken = req.query.staffToken;
+      let isStaff = isStaffForEvent(req, slug);
+
+      // Debug logging
+      console.log(`[TICKET VIEW] Slug: ${slug}, Ticket: ${ticketId}, IsStaff: ${isStaff}, StaffToken provided: ${!!staffToken}, Session:`, req.session);
+
+      // If staff token provided in URL, validate and set session
+      if (!isStaff && staffToken) {
+        const event = await getEvent(slug);
+        if (event && staffToken === event.staffToken) {
+          console.log(`[TICKET VIEW] Setting staff session via staffToken parameter`);
+          req.session[`staff_${slug}`] = true;
+          await new Promise((resolve, reject) => {
+            req.session.save((err) => err ? reject(err) : resolve());
+          });
+          isStaff = true;
+        }
+      }
 
       if (isNaN(ticketId) || ticketId < 1) {
         return res.status(404).send('Not Found');
@@ -473,14 +493,15 @@ function setupRoutes(app) {
 
       // Staff always gets staff view (priority over token)
       if (isStaff) {
+        console.log(`[TICKET VIEW] Rendering STAFF view for ticket ${ticketId}, Status: ${ticket.status}, Location: ${ticket.location}, Ticket data:`, ticket);
         return res.render('staff-ticket', {
           slug,
           ticketId,
-          status: ticket.status,
-          location: ticket.location,
           staffToken: event.staffToken
         });
       }
+
+      console.log(`[TICKET VIEW] Rendering GUEST view for ticket ${ticketId}`);
 
       // Not staff - guest must provide valid token
       if (!providedToken || providedToken !== ticket.token) {
@@ -693,6 +714,7 @@ function setupRoutes(app) {
       res.render('staff-dashboard', {
         slug,
         eventName: event.name,
+        staffToken: event.staffToken,
         stats: {
           ...stats,
           ticketsIssued: ticketCount
@@ -711,15 +733,36 @@ function setupRoutes(app) {
 
   /**
    * Middleware: Require staff session for event
+   * Checks session first, then falls back to staffToken in body/query
    */
-  function requireStaffAuth(req, res, next) {
+  async function requireStaffAuth(req, res, next) {
     const { slug } = req.params;
 
-    if (!isStaffForEvent(req, slug)) {
-      return res.status(401).json({ error: 'Staff authentication required' });
+    // Check if already authenticated via session
+    if (isStaffForEvent(req, slug)) {
+      return next();
     }
 
-    next();
+    // Fall back to staffToken in body or query
+    const staffToken = req.body.staffToken || req.query.staffToken;
+    if (staffToken) {
+      try {
+        const event = await getEvent(slug);
+        if (event && staffToken === event.staffToken) {
+          // Valid staff token - set session
+          req.session[`staff_${slug}`] = true;
+          await new Promise((resolve, reject) => {
+            req.session.save((err) => err ? reject(err) : resolve());
+          });
+          return next();
+        }
+      } catch (error) {
+        console.error('Error validating staff token:', error);
+      }
+    }
+
+    // No valid authentication found
+    return res.status(401).json({ error: 'Staff authentication required' });
   }
 
   /**

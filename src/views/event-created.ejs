@@ -300,22 +300,6 @@
 
       <div class="url-section">
         <div class="url-label">
-          <span class="url-label-icon">📱</span>
-          <span>Guest URL (write to NFC tags)</span>
-        </div>
-        <div class="url-hint">Guests tap NFC tag with this URL to get their tickets</div>
-        <div class="url-box">
-          <div class="url-text" id="guestUrl"><%= baseUrl %>/e/<%= slug %>/new</div>
-          <button class="copy-button" onclick="copyUrl('guestUrl', this)">Copy</button>
-        </div>
-        <div class="qr-code-container">
-          <img src="/api/qr-event/<%= slug %>" alt="Guest URL QR Code" class="qr-code" id="qrCode">
-          <div class="qr-label">QR code for guest URL (for easy NFC programming)</div>
-        </div>
-      </div>
-
-      <div class="url-section">
-        <div class="url-label">
           <span class="url-label-icon">👔</span>
           <span>Staff URL (bookmark on staff phones)</span>
         </div>
@@ -327,6 +311,22 @@
         <div class="qr-code-container">
           <img src="/api/qr-staff/<%= slug %>?token=<%= staffToken %>" alt="Staff URL QR Code" class="qr-code" id="staffQrCode">
           <div class="qr-label">QR code for staff URL (scan to bookmark)</div>
+        </div>
+      </div>
+
+      <div class="url-section">
+        <div class="url-label">
+          <span class="url-label-icon">📱</span>
+          <span>Guest URL (write to NFC tags)</span>
+        </div>
+        <div class="url-hint">Guests tap NFC tag with this URL to get their tickets</div>
+        <div class="url-box">
+          <div class="url-text" id="guestUrl"><%= baseUrl %>/e/<%= slug %>/new</div>
+          <button class="copy-button" onclick="copyUrl('guestUrl', this)">Copy</button>
+        </div>
+        <div class="qr-code-container">
+          <img src="/api/qr-event/<%= slug %>" alt="Guest URL QR Code" class="qr-code" id="qrCode">
+          <div class="qr-label">QR code for guest URL (for easy NFC programming)</div>
         </div>
       </div>
 

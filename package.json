@@ -1,6 +1,6 @@
 {
   "name": "garderobe-digital-platform",
-  "version": "4.0.0",
+  "version": "4.3.0",
   "description": "Free Ephemeral NFC Coat Check Platform",
   "main": "src/server.js",
   "scripts": {

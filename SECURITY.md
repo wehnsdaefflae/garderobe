@@ -38,7 +38,7 @@ Comprehensive analysis of attack vectors, implemented mitigations, and remaining
    - `X-Content-Type-Options: nosniff` - No MIME sniffing
    - `X-XSS-Protection: 1; mode=block` - XSS filter enabled
    - `Referrer-Policy: strict-origin-when-cross-origin`
-   - `Permissions-Policy` - Disables geolocation, camera, microphone
+   - `Permissions-Policy` - Disables geolocation, microphone; allows camera (for QR scanning)
 
 6. **✅ Enhanced Session Security**
    - `SameSite=Strict` - CSRF protection
@@ -259,7 +259,7 @@ X-XSS-Protection: 1; mode=block
 Referrer-Policy: strict-origin-when-cross-origin
 
 // Feature Policy
-Permissions-Policy: geolocation=(), microphone=(), camera=()
+Permissions-Policy: geolocation=(), microphone=(), camera=(self)
 
 // Session Cookie
 Set-Cookie: garderobe.sid=...; HttpOnly; Secure; SameSite=Strict

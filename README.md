@@ -11,7 +11,6 @@ Garderobe Digital is a free, open-source platform that lets anyone instantly cre
 ❌ **Not** a self-hosted solution you deploy per-event
 ✅ **Single platform** at garderobe.io that hosts multiple events
 ✅ **Zero registration** - just visit, create, and go
-✅ **Zero cost** - completely free to use
 ✅ **Zero persistence** - events auto-delete after 24-48 hours
 ✅ **Zero friction** - works on any smartphone without apps
 
@@ -102,7 +101,6 @@ You'll immediately receive two URLs:
 - 🔄 **Multi-staff** - Multiple staff can work simultaneously
 
 ### For Organizers
-- 🆓 **Completely free** - No costs, no subscriptions
 - ⏱️ **30-second setup** - Fastest coat check system ever
 - 🔐 **Secure by design** - Unguessable event URLs
 - 🗑️ **Auto-cleanup** - Events delete automatically
@@ -326,13 +324,13 @@ A: Anyone with the staff URL can manage coats. Keep it private. If leaked, creat
 A: A small VPS (1GB RAM) can easily handle 100+ simultaneous events with thousands of tickets each.
 
 **Q: Do I need to backup Redis?**
-A: No! Data is intentionally ephemeral. It's designed to be lost when events expire.
+A: No! While Redis persists data to survive restarts, events are ephemeral by design and auto-delete after their duration. No manual backups needed.
 
 **Q: Can I customize the UI?**
 A: Yes! All views are in `src/views/`. Edit the EJS templates to match your branding.
 
 **Q: Is Redis persistence needed?**
-A: No. Redis is configured with LRU eviction policy (`allkeys-lru`), treating everything as cache.
+A: Yes, for reliability. Redis uses AOF (Append Only File) persistence to survive server restarts. TTL-based auto-deletion still works—data expires after event duration regardless of persistence.
 
 ### Technical
 

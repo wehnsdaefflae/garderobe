@@ -1,12 +1,14 @@
 version: '3.8'
 
 services:
-  # Redis data store (ephemeral, no persistence needed)
+  # Redis data store with persistence
   redis:
     image: redis:7-alpine
     container_name: garderobe-redis
     restart: unless-stopped
-    command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru --appendonly yes --appendfsync everysec
+    volumes:
+      - redis_data:/data
     networks:
       - garderobe-network
     healthcheck:
@@ -65,5 +67,6 @@ networks:
     driver: bridge
 
 volumes:
+  redis_data:
   caddy_data:
   caddy_config:

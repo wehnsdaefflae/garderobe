@@ -48,8 +48,8 @@ app.use((req, res, next) => {
   // Referrer-Policy - Control referrer information
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-  // Permissions-Policy - Disable unnecessary features
-  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  // Permissions-Policy - Disable unnecessary features (allow camera for QR scanning)
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(self)');
 
   next();
 });
@@ -89,7 +89,7 @@ async function startServer() {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        sameSite: 'strict' // CSRF protection
+        sameSite: 'lax' // Allows cookies on QR code scans while maintaining CSRF protection
       },
       name: 'garderobe.sid'
     });

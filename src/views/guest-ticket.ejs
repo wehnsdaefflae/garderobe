@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#667eea">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <title>Ticket #<%= ticketId %> - Garderobe Digital</title>
   <style>
     * {
@@ -112,11 +114,55 @@
 
     .bookmark-hint {
       margin-top: 20px;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
       font-size: 14px;
-      opacity: 0.9;
+      line-height: 1.8;
+      text-align: left;
+    }
+
+    .bookmark-hint strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .action-buttons {
+      margin-top: 30px;
+    }
+
+    .action-button {
+      width: 100%;
+      padding: 18px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #667eea;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .action-button:hover {
+      background: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+    }
+
+    .action-button:active {
+      transform: translateY(0);
+    }
+
+    .btn-icon {
+      font-size: 20px;
     }
 
     @media (max-width: 480px) {
@@ -166,8 +212,18 @@
         💾 You can find it in your browser history if needed
       </div>
 
+      <div class="action-buttons">
+        <button class="action-button btn-primary" id="saveQrBtn">
+          <span class="btn-icon">💾</span>
+          <span>Save QR Code Image</span>
+        </button>
+      </div>
+
       <div class="bookmark-hint">
-        💡 Tip: Bookmark this page or add it to your home screen for safekeeping
+        💡 <strong>Ways to save your ticket:</strong><br>
+        📸 Take a screenshot of this page<br>
+        💾 Tap the button above to download the QR code<br>
+        🔖 Keep this browser tab open until you retrieve your coat
       </div>
     </div>
   </div>
@@ -179,9 +235,43 @@
       e.returnValue = '';
     });
 
-    // Add to home screen prompt for iOS/Android
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      console.log('Running as standalone app');
+    // Save QR Code as image
+    document.getElementById('saveQrBtn').addEventListener('click', async function() {
+      try {
+        const qrImg = document.getElementById('qrCode');
+        const response = await fetch(qrImg.src);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'garderobe-ticket-<%= ticketId %>.png';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        // Visual feedback
+        this.innerHTML = '<span class="btn-icon">✅</span><span>Saved to Downloads!</span>';
+        setTimeout(() => {
+          this.innerHTML = '<span class="btn-icon">💾</span><span>Save QR Code Image</span>';
+        }, 3000);
+      } catch (error) {
+        console.error('Error saving QR code:', error);
+        alert('Could not download QR code. Try taking a screenshot instead!');
+      }
+    });
+
+    // Register service worker for offline support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('ServiceWorker registered:', registration);
+        })
+        .catch((error) => {
+          console.log('ServiceWorker registration failed:', error);
+        });
     }
   </script>
 </body>
