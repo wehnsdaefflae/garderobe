@@ -17,7 +17,7 @@ Garderobe Digital is a free, open-source platform that lets anyone instantly cre
 
 ### 1. Create Your Event
 
-Visit **[garderobe.io](http://garderobe.io)** and click "Create New Event":
+Visit **[garderobe.markwernsdorfer.com](http://garderobe.io)** and click "Create New Event":
 
 1. Enter event name (optional)
 2. Configure your location layout (e.g., Racks A-F, Spots 1-50)
@@ -29,8 +29,8 @@ Visit **[garderobe.io](http://garderobe.io)** and click "Create New Event":
 You'll immediately receive two URLs:
 
 ```
-📱 Guest URL:  https://garderobe.io/e/abc123xyz789/new
-👔 Staff URL:  https://garderobe.io/e/abc123xyz789/staff
+📱 Guest URL:  https://garderobe.markwernsdorfer.com/e/abc123xyz789/new
+👔 Staff URL:  https://garderobe.markwernsdorfer.com/e/abc123xyz789/staff
 ```
 
 **⚠️ Save these now! We don't send emails or store accounts.**
@@ -86,6 +86,7 @@ You'll immediately receive two URLs:
 ## Features
 
 ### For Guests
+
 - ⚡ **Instant tickets** - Tap NFC tag, get ticket in 1 second
 - 🔒 **Secure** - Cryptographically secure tokens prevent fraud
 - 📱 **Universal** - Works on all modern smartphones
@@ -93,6 +94,7 @@ You'll immediately receive two URLs:
 - 🎫 **Simple** - Just a number and QR code
 
 ### For Staff
+
 - 📷 **Camera scanning** - Use phone camera to scan QR codes
 - 🎯 **Automatic assignment** - System assigns next available location
 - 📊 **Live statistics** - See capacity usage in real-time
@@ -100,6 +102,7 @@ You'll immediately receive two URLs:
 - 🔄 **Multi-staff** - Multiple staff can work simultaneously
 
 ### For Organizers
+
 - ⏱️ **30-second setup** - Fastest coat check system ever
 - 🔐 **Secure by design** - Unguessable event URLs
 - 🗑️ **Auto-cleanup** - Events delete automatically
@@ -122,16 +125,19 @@ Traditional systems use passwords to secure events. Garderobe Digital uses a dif
 ### Technical Stack
 
 **Frontend:**
+
 - Server-side rendered EJS templates
 - Native camera for QR scanning (no libraries needed)
 - Mobile-first responsive design
 
 **Backend:**
+
 - Node.js 18 + Express.js
 - Redis for data storage (with TTL-based auto-deletion)
 - Token-based authentication (no sessions as of v4.3.0)
 
 **Deployment:**
+
 - Docker + Docker Compose
 - Optional Caddy for automatic HTTPS
 - Single $5-10/month VPS can handle 100+ simultaneous events
@@ -232,6 +238,7 @@ NODE_ENV=production
 ### Bot Protection
 
 **Math Challenge System** (No CAPTCHA required):
+
 - Simple arithmetic challenge on event creation (e.g., "What is 23 + 17?")
 - Prevents automated bot attacks
 - No external services or tracking
@@ -248,16 +255,19 @@ NODE_ENV=production
 ### Security Headers
 
 **HSTS** (Production only):
+
 - Forces HTTPS for all connections
 - 1-year duration with subdomains
 - Preload eligible
 
 **Content Security Policy**:
+
 - Prevents XSS attacks
 - Blocks unauthorized scripts
 - Restricts resource loading
 
 **Additional Headers**:
+
 - X-Frame-Options: DENY (clickjacking protection)
 - X-Content-Type-Options: nosniff (MIME sniffing protection)
 - X-XSS-Protection: 1; mode=block
@@ -384,18 +394,8 @@ npm run test:coverage
 
 ## Roadmap
 
-### Potential Features (Community Vote)
-
-- [ ] SMS/Email ticket delivery (optional)
-- [ ] Multiple location schemas per event
-- [ ] Analytics dashboard for organizers
-- [ ] Custom branding per event
-- [ ] Integration with ticket systems (Eventbrite, etc.)
-- [ ] Multi-language support
-- [ ] Voice retrieval (speak ticket number)
-- [ ] Admin panel for platform monitoring
-
 **Not planned:**
+
 - ❌ User accounts (defeats the purpose)
 - ❌ Permanent data storage (ephemeral is the point)
 - ❌ Payment/billing (free forever)
@@ -410,12 +410,14 @@ MIT License - Free to use, modify, and distribute.
 Built with ❤️ for the events community.
 
 **Core Tech:**
+
 - Node.js & Express.js
 - Redis
 - Docker & Caddy
 - QR Code generation
 
 **Inspired by:**
+
 - The Berlin club scene
 - Zero-friction user experiences
 - Ephemeral design principles
