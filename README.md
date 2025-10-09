@@ -8,11 +8,10 @@ Garderobe Digital is a free, open-source platform that lets anyone instantly cre
 
 ### How It's Different
 
-❌ **Not** a self-hosted solution you deploy per-event
-✅ **Single platform** at garderobe.io that hosts multiple events
-✅ **Zero registration** - just visit, create, and go
-✅ **Zero persistence** - events auto-delete after 24-48 hours
-✅ **Zero friction** - works on any smartphone without apps
+- ✅ **Single platform** that hosts multiple events
+- ✅ **Zero registration** - just visit, create, and go
+- ✅ **Zero persistence** - events auto-delete after 72 hours
+- ✅ **Zero friction** - works on any smartphone without apps
 
 ## Quick Start (For Event Organizers)
 
@@ -166,8 +165,8 @@ Want to host your own instance? Easy!
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/anthropics/garderobe-digital.git
-cd garderobe-digital
+git clone https://github.com/wehnsdaefflae/garderobe.git
+cd garderobe
 
 # 2. Configure
 cp .env.example .env
@@ -263,7 +262,7 @@ NODE_ENV=production
 - X-Content-Type-Options: nosniff (MIME sniffing protection)
 - X-XSS-Protection: 1; mode=block
 - Referrer-Policy: strict-origin-when-cross-origin
-- Permissions-Policy: Disables geolocation, camera, microphone
+- Permissions-Policy: Disables geolocation, microphone; allows camera (for QR scanning)
 
 ### Token-Based Authentication (v4.3.0+)
 
@@ -367,9 +366,9 @@ npm install
 npm run dev
 
 # Run tests
-npm test              # All tests
-npm run test:unit     # Unit tests only
-npm run test:e2e      # Browser tests only
+npm test                    # All tests
+npm run test:unit           # Unit tests only
+npm run test:integration    # Integration tests
 
 # Test coverage
 npm run test:coverage
@@ -439,10 +438,8 @@ Built with ❤️ for the events community.
 
 ## Community
 
-- **Website**: garderobe.io (when we launch!)
-- **GitHub**: github.com/anthropics/garderobe-digital
-- **Discord**: [Coming soon]
-- **Twitter**: @garderobeio
+- **GitHub**: https://github.com/wehnsdaefflae/garderobe
+- **Documentation**: See project files (CLAUDE.md, TESTING.md, SECURITY.md)
 
 ---
 
