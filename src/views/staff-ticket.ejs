@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#1a202c">
+  <meta name="theme-color" content="#0f172a">
   <title>Ticket #<%= ticketId %> - Garderobe Digital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -13,41 +16,52 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-      color: #fff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: #0f172a;
+      color: #ffffff;
       min-height: 100vh;
       padding: 20px;
+      line-height: 1.5;
     }
 
     .header {
+      max-width: 600px;
+      margin: 0 auto 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
       padding-bottom: 20px;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .brand {
       font-size: 18px;
       font-weight: 700;
+      color: #ffffff;
     }
 
     .back-btn {
-      padding: 10px 20px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #e2e8f0;
       text-decoration: none;
       font-size: 14px;
-      font-weight: 600;
-      transition: background 0.2s ease;
+      font-weight: 500;
+      transition: background 150ms ease-in-out;
     }
 
     .back-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .back-icon {
+      width: 16px;
+      height: 16px;
     }
 
     .container {
@@ -56,102 +70,116 @@
     }
 
     .ticket-card {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      padding: 40px;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 40px 32px;
       text-align: center;
-      margin-bottom: 20px;
     }
 
     .ticket-card.new {
-      border-color: rgba(16, 185, 129, 0.5);
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+      border-color: rgba(16, 185, 129, 0.3);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(16, 185, 129, 0.02));
     }
 
-    .ticket-card.checked-in {
-      border-color: rgba(59, 130, 246, 0.5);
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+    .ticket-card.checked_in {
+      border-color: rgba(59, 130, 246, 0.3);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02));
     }
 
-    .ticket-card.checked-out {
-      border-color: rgba(107, 114, 128, 0.5);
-      background: linear-gradient(135deg, rgba(107, 114, 128, 0.2), rgba(107, 114, 128, 0.1));
+    .ticket-card.checked_out {
+      border-color: rgba(107, 114, 128, 0.3);
+      background: linear-gradient(135deg, rgba(107, 114, 128, 0.05), rgba(107, 114, 128, 0.02));
     }
 
     .ticket-status {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 1px;
-      opacity: 0.8;
-      margin-bottom: 15px;
+      color: #94a3b8;
+      margin-bottom: 12px;
     }
 
     .ticket-number {
-      font-size: 80px;
+      font-size: 72px;
       font-weight: 900;
       line-height: 1;
-      margin: 20px 0;
+      margin: 16px 0 32px;
+      color: #ffffff;
     }
 
     .location-display {
-      font-size: 48px;
+      font-size: 56px;
       font-weight: 900;
-      margin: 30px 0;
-      padding: 30px;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 15px;
+      margin: 32px 0;
+      padding: 32px;
+      background: rgba(13, 148, 136, 0.1);
+      border: 2px solid rgba(13, 148, 136, 0.3);
+      border-radius: 12px;
       letter-spacing: 2px;
+      color: #14b8a6;
     }
 
     .action-message {
-      font-size: 20px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 500;
       margin: 20px 0;
-      line-height: 1.5;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+
+    .action-message.large {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .action-message.success {
+      color: #10b981;
     }
 
     .btn-action {
       width: 100%;
       max-width: 400px;
-      padding: 20px;
+      padding: 16px;
       border: none;
-      border-radius: 12px;
-      color: #fff;
-      font-size: 18px;
-      font-weight: 700;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
       margin: 10px auto;
-      display: block;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 150ms ease-in-out;
+      font-family: inherit;
+    }
+
+    .btn-action-icon {
+      width: 20px;
+      height: 20px;
     }
 
     .btn-checkin {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+      background: #10b981;
     }
 
-    .btn-checkin:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+    .btn-checkin:hover:not(:disabled) {
+      background: #059669;
     }
 
     .btn-checkout {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+      background: #3b82f6;
     }
 
-    .btn-checkout:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+    .btn-checkout:hover:not(:disabled) {
+      background: #2563eb;
     }
 
-    .btn-action:active {
-      transform: translateY(0);
+    .btn-action:active:not(:disabled) {
+      transform: scale(0.98);
     }
 
     .btn-action:disabled {
@@ -161,18 +189,19 @@
 
     .loading {
       display: none;
-      font-size: 16px;
+      font-size: 14px;
       margin-top: 20px;
-      opacity: 0.8;
+      color: #94a3b8;
     }
 
     .error-message {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid rgba(239, 68, 68, 0.5);
-      border-radius: 10px;
-      padding: 15px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      padding: 16px;
       margin: 20px 0;
-      color: #fecaca;
+      color: #fca5a5;
+      font-size: 14px;
     }
 
     .success-pulse {
@@ -181,14 +210,34 @@
 
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      50% { transform: scale(1.02); }
+    }
+
+    @media (max-width: 480px) {
+      .ticket-number {
+        font-size: 56px;
+      }
+
+      .location-display {
+        font-size: 40px;
+        padding: 24px;
+      }
+
+      .ticket-card {
+        padding: 32px 24px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <div class="brand">🎫 Garderobe Digital</div>
-    <a href="/e/<%= slug %>/staff?token=<%= staffToken %>" class="back-btn">← Dashboard</a>
+    <div class="brand">Garderobe Digital</div>
+    <a href="/e/<%= slug %>/staff?token=<%= staffToken %>" class="back-btn">
+      <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+      Dashboard
+    </a>
   </div>
 
   <div class="container">
@@ -198,7 +247,7 @@
       <div class="ticket-number">#<%= ticketId %></div>
 
       <div id="contentArea">
-        <div class="loading" style="display: block; margin: 40px 0;">⏳ Loading ticket status...</div>
+        <div class="loading" style="display: block; margin: 40px 0;">Loading ticket status...</div>
       </div>
 
       <div class="loading" id="loading" style="display: none;">Processing...</div>
@@ -226,7 +275,7 @@
         renderTicketUI(data.status, data.location);
 
       } catch (error) {
-        document.getElementById('error').textContent = '⚠️ ' + error.message;
+        document.getElementById('error').textContent = error.message;
         document.getElementById('error').style.display = 'block';
         document.getElementById('contentArea').innerHTML = '<div class="action-message">Unable to load ticket status</div>';
       }
@@ -244,7 +293,10 @@
         contentArea.innerHTML = `
           <div class="action-message">Ready to check in this coat</div>
           <button class="btn-action btn-checkin" onclick="checkIn()">
-            ✓ Check In Coat
+            <svg class="btn-action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Check In Coat
           </button>
         `;
       } else if (status === 'checked_in') {
@@ -253,7 +305,10 @@
           <div class="action-message">Retrieve coat from:</div>
           <div class="location-display" id="locationDisplay">${location}</div>
           <button class="btn-action btn-checkout" onclick="checkOut()">
-            ✓ Check Out Coat
+            <svg class="btn-action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Check Out Coat
           </button>
         `;
       } else {
@@ -266,7 +321,7 @@
     loadTicketStatus();
 
     async function checkIn() {
-      const btn = event.target;
+      const btn = event.target.closest('button');
       btn.disabled = true;
       document.getElementById('loading').style.display = 'block';
 
@@ -290,24 +345,24 @@
 
         // Update UI to checked-in state
         document.getElementById('statusLabel').textContent = 'Checked In';
-        document.getElementById('ticketCard').className = 'ticket-card checked-in success-pulse';
+        document.getElementById('ticketCard').className = 'ticket-card checked_in success-pulse';
 
         const contentArea = document.getElementById('contentArea');
         contentArea.innerHTML = `
-          <div class="action-message" style="color: #10b981; font-size: 24px; font-weight: 700;">
-            ✓ CHECKED IN
+          <div class="action-message large success">
+            Checked In Successfully
           </div>
           <div class="action-message">Place coat in:</div>
-          <div class="location-display" style="font-size: 48px; font-weight: 900; margin: 30px 0; padding: 30px; background: rgba(0, 0, 0, 0.3); border-radius: 15px; letter-spacing: 2px;">${data.location}</div>
+          <div class="location-display">${data.location}</div>
         `;
 
         // After brief moment, show checkout button
         setTimeout(async () => {
-          await loadTicketStatus(); // Shows checkout button
+          await loadTicketStatus();
         }, 2000);
 
       } catch (error) {
-        document.getElementById('error').textContent = '⚠️ ' + error.message;
+        document.getElementById('error').textContent = error.message;
         document.getElementById('error').style.display = 'block';
         btn.disabled = false;
       } finally {
@@ -316,7 +371,7 @@
     }
 
     async function checkOut() {
-      const btn = event.target;
+      const btn = event.target.closest('button');
       btn.disabled = true;
       document.getElementById('loading').style.display = 'block';
 
@@ -343,8 +398,8 @@
 
         // Show success message and redirect
         document.getElementById('contentArea').innerHTML = `
-          <div class="action-message" style="color: #10b981; font-size: 24px; font-weight: 700; animation: pulse 0.5s ease;">
-            ✓ COAT RETURNED
+          <div class="action-message large success success-pulse">
+            Coat Returned Successfully
           </div>
           <div class="action-message" style="margin-top: 20px;">
             Returning to dashboard...
@@ -357,7 +412,7 @@
         }, 1500);
 
       } catch (error) {
-        document.getElementById('error').textContent = '⚠️ ' + error.message;
+        document.getElementById('error').textContent = error.message;
         document.getElementById('error').style.display = 'block';
         btn.disabled = false;
       } finally {

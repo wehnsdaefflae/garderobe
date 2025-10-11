@@ -1,0 +1,6 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simple, professional coat hanger icon -->
+  <path d="M20 4C21.6569 4 23 5.34315 23 7C23 8.65685 21.6569 10 20 10C18.3431 10 17 8.65685 17 7C17 5.34315 18.3431 4 20 4Z" fill="currentColor"/>
+  <path d="M20 10V14M20 14L4 22V24H36V22L20 14Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M6 24V34C6 35.1046 6.89543 36 8 36H32C33.1046 36 34 35.1046 34 34V24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

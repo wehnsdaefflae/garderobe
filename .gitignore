@@ -9,3 +9,6 @@ yarn-error.log*
 .idea/
 deploy.sh
 deploy-remote.sh
+
+CLAUDE.md
+.claude/

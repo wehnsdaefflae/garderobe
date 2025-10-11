@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#667eea">
-  <meta name="description" content="Free QR code coat check system for events. NFC ready. Create your temporary wardrobe management system in 30 seconds.">
-  <title>Garderobe Digital - QR Code Coat Check for Events</title>
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Professional digital coat check system for events. NFC-enabled, secure, and ephemeral. Create your event management system in under 30 seconds.">
+  <title>Garderobe Digital - Professional Event Coat Check System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -14,217 +17,379 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #fff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: #ffffff;
+      color: #0f172a;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      line-height: 1.5;
     }
 
-    .container {
-      max-width: 600px;
-      width: 100%;
+    /* Header */
+    .header {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 16px 20px;
+    }
+
+    .header-content {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      color: #14b8a6;
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    /* Hero Section */
+    .hero {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 80px 20px;
       text-align: center;
     }
 
-    .logo {
-      font-size: 60px;
+    .hero-title {
+      font-size: 48px;
+      font-weight: 800;
+      line-height: 1.2;
       margin-bottom: 20px;
+      letter-spacing: -1.5px;
+      color: #0f172a;
     }
 
-    h1 {
-      font-size: 42px;
-      font-weight: 900;
-      margin-bottom: 15px;
-      letter-spacing: -1px;
-    }
-
-    .tagline {
+    .hero-subtitle {
       font-size: 20px;
-      opacity: 0.95;
+      color: #475569;
       margin-bottom: 40px;
-      font-weight: 500;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .cta-button {
-      display: inline-block;
-      padding: 20px 50px;
-      background: rgba(255, 255, 255, 0.95);
-      color: #667eea;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      background: #0d9488;
+      color: #ffffff;
       text-decoration: none;
-      border-radius: 50px;
-      font-size: 18px;
-      font-weight: 700;
-      transition: all 0.3s ease;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      margin-bottom: 50px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background 150ms ease-in-out;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
 
     .cta-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-      background: #fff;
+      background: #0f766e;
     }
 
+    .cta-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Features Grid */
     .features {
+      max-width: 1280px;
+      margin: 60px auto;
+      padding: 0 20px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 20px;
-      margin-top: 50px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
     }
 
     .feature {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 15px;
-      padding: 25px 20px;
-    }
-
-    .feature-icon {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    .feature-title {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 5px;
-    }
-
-    .feature-desc {
-      font-size: 12px;
-      opacity: 0.9;
-    }
-
-    .info-section {
-      margin-top: 60px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      padding: 30px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 32px 24px;
       text-align: left;
     }
 
-    .info-title {
-      font-size: 22px;
+    .feature-icon {
+      width: 32px;
+      height: 32px;
+      color: #0d9488;
+      margin-bottom: 16px;
+    }
+
+    .feature-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #0f172a;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    /* How It Works Section */
+    .how-it-works {
+      background: #f8fafc;
+      padding: 80px 20px;
+    }
+
+    .how-it-works-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 36px;
       font-weight: 700;
-      margin-bottom: 20px;
       text-align: center;
+      margin-bottom: 48px;
+      color: #0f172a;
     }
 
-    .info-item {
-      margin-bottom: 15px;
-      padding-left: 30px;
-      position: relative;
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
 
-    .info-item::before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      font-weight: bold;
-      color: #10b981;
+    .step {
+      display: flex;
+      gap: 20px;
+    }
+
+    .step-number {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      background: #0d9488;
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
       font-size: 18px;
     }
 
-    .footer {
-      margin-top: 50px;
-      opacity: 0.8;
+    .step-content {
+      flex: 1;
+      padding-top: 6px;
+    }
+
+    .step-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #0f172a;
+    }
+
+    .step-desc {
       font-size: 14px;
+      color: #475569;
+      line-height: 1.6;
     }
 
-    .footer a {
-      color: #fff;
+    /* Footer */
+    .footer {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 48px 20px 32px;
+      text-align: center;
+    }
+
+    .footer-content {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: #94a3b8;
       text-decoration: none;
-      border-bottom: 1px solid rgba(255,255,255,0.5);
+      font-size: 14px;
+      transition: color 150ms ease-in-out;
     }
 
-    .version {
-      margin-top: 15px;
+    .footer-link:hover {
+      color: #ffffff;
+    }
+
+    .footer-version {
       font-size: 12px;
-      opacity: 0.6;
+      color: #64748b;
     }
 
-    @media (max-width: 640px) {
-      h1 {
-        font-size: 32px;
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 36px;
       }
 
-      .tagline {
+      .hero-subtitle {
         font-size: 18px;
       }
 
       .features {
         grid-template-columns: 1fr;
       }
+
+      .section-title {
+        font-size: 28px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">🧥</div>
-    <h1>Garderobe Digital</h1>
-    <div class="tagline">QR Code Coat Check for Events</div>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <svg class="logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 4C21.6569 4 23 5.34315 23 7C23 8.65685 21.6569 10 20 10C18.3431 10 17 8.65685 17 7C17 5.34315 18.3431 4 20 4Z" fill="currentColor"/>
+        <path d="M20 10V14M20 14L4 22V24H36V22L20 14Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M6 24V34C6 35.1046 6.89543 36 8 36H32C33.1046 36 34 35.1046 34 34V24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">Garderobe Digital</span>
+    </div>
+  </header>
 
-    <a href="/new" class="cta-button">Create New Event</a>
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1 class="hero-title">Professional Coat Check<br>for Modern Events</h1>
+    <p class="hero-subtitle">Secure, ephemeral, and NFC-enabled. Create your digital wardrobe management system in under 30 seconds.</p>
+    <a href="/new" class="cta-button">
+      <svg class="cta-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Create New Event
+    </a>
+  </section>
 
-    <div class="features">
-      <div class="feature">
-        <div class="feature-icon">⚡</div>
-        <div class="feature-title">30-Second Setup</div>
-        <div class="feature-desc">No registration required</div>
-      </div>
-
-      <div class="feature">
-        <div class="feature-icon">📱</div>
-        <div class="feature-title">NFC Ready</div>
-        <div class="feature-desc">Works with any phone</div>
-      </div>
-
-      <div class="feature">
-        <div class="feature-icon">🔒</div>
-        <div class="feature-title">Secure Tokens</div>
-        <div class="feature-desc">Cryptographically safe</div>
-      </div>
+  <!-- Features Grid -->
+  <section class="features">
+    <div class="feature">
+      <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+      </svg>
+      <h3 class="feature-title">Instant Setup</h3>
+      <p class="feature-desc">No registration, no setup complexity. Get unique URLs for guests and staff in under 30 seconds.</p>
     </div>
 
-    <div class="info-section">
-      <div class="info-title">How It Works</div>
-
-      <div class="info-item">
-        <strong>Create your event</strong> - Get unique URLs for guests and staff in seconds
-      </div>
-
-      <div class="info-item">
-        <strong>Write guest URL to NFC tags</strong> - Place tags at your coat check counter
-      </div>
-
-      <div class="info-item">
-        <strong>Guests tap to get tickets</strong> - Digital ticket with QR code appears instantly
-      </div>
-
-      <div class="info-item">
-        <strong>Staff scan QR codes</strong> - Check in coats, assign locations, manage retrieval
-      </div>
-
-      <div class="info-item">
-        <strong>Auto-deletes after 24 hours</strong> - Zero cleanup, zero maintenance
-      </div>
+    <div class="feature">
+      <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+      </svg>
+      <h3 class="feature-title">NFC Ready</h3>
+      <p class="feature-desc">Write guest URLs to NFC tags. Works with any modern smartphone—no app installation required.</p>
     </div>
 
-    <div class="footer">
-      <p>
-        Open Source • <a href="https://github.com/wehnsdaefflae/garderobe" target="_blank">GitHub</a> •
-        Built in Berlin with ❤️ for the events community
-      </p>
-      <p class="version">v<%= version %></p>
+    <div class="feature">
+      <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+      </svg>
+      <h3 class="feature-title">Cryptographically Secure</h3>
+      <p class="feature-desc">95-bit entropy tokens ensure guest tickets are unguessable. No passwords, no authentication complexity.</p>
     </div>
-  </div>
+
+    <div class="feature">
+      <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h3 class="feature-title">Auto-Expires</h3>
+      <p class="feature-desc">All events and data automatically delete after 72 hours. Zero cleanup, zero maintenance, zero storage costs.</p>
+    </div>
+
+    <div class="feature">
+      <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+      </svg>
+      <h3 class="feature-title">QR Code Scanning</h3>
+      <p class="feature-desc">Staff scan guest QR codes with any device camera. Atomic location assignment prevents race conditions.</p>
+    </div>
+
+    <div class="feature">
+      <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+      </svg>
+      <h3 class="feature-title">Open Source</h3>
+      <p class="feature-desc">Self-hostable, auditable, and MIT licensed. Deploy your own instance or use our hosted version.</p>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-it-works">
+    <div class="how-it-works-content">
+      <h2 class="section-title">How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3 class="step-title">Create Your Event</h3>
+            <p class="step-desc">Configure your location layout (racks and spots). Get unique URLs for guests and staff instantly.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3 class="step-title">Write Guest URL to NFC Tags</h3>
+            <p class="step-desc">Place NFC tags at your coat check counter. Guests tap their phones to instantly receive a digital ticket.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3 class="step-title">Guests Get Digital Tickets</h3>
+            <p class="step-desc">Each tap generates a unique ticket with a large number and QR code. Guests save the page or screenshot it.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3 class="step-title">Staff Scan & Assign Locations</h3>
+            <p class="step-desc">Staff use the dashboard to scan QR codes, check in coats, and atomically assign storage locations.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <h3 class="step-title">Automatic Cleanup</h3>
+            <p class="step-desc">After 72 hours, all event data auto-deletes via Redis TTL. No manual cleanup required.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="https://github.com/wehnsdaefflae/garderobe" target="_blank" class="footer-link">GitHub</a>
+        <span class="footer-link">•</span>
+        <span class="footer-link">Open Source</span>
+        <span class="footer-link">•</span>
+        <span class="footer-link">Built in Berlin</span>
+      </div>
+      <p class="footer-version">v<%= version %></p>
+    </div>
+  </footer>
 </body>
 </html>

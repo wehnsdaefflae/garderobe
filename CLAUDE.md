@@ -8,7 +8,7 @@ Garderobe Digital is a free, ephemeral NFC-based coat check platform. It's desig
 
 **Core Architecture Principle**: Security through unguessable URLs (~95 bits entropy) + ephemeral data + zero authentication complexity. No user accounts, no passwords for guests, staff authenticated via URL tokens.
 
-## Development Commands
+## Development Commands & Testing
 
 ### Local Development
 ```bash
@@ -19,6 +19,26 @@ npm install
 npm run dev
 
 # Application runs on http://localhost:3000
+```
+
+**Local Development Requirements**:
+- Redis must be running locally (via Docker: `docker run -d -p 6379:6379 redis:7-alpine`)
+- Node.js 18+ required
+
+### Testing
+```bash
+# Run all tests
+npm test
+
+# Run specific test suites
+npm run test:unit           # Unit tests only
+npm run test:integration    # Integration tests only
+
+# Run tests in watch mode (auto-rerun on file changes)
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
 ```
 
 ### Production Deployment
@@ -253,4 +273,5 @@ Test rate limiting:
 - `README.md` - User guide, deployment instructions, feature overview
 - `PROJECT.md` - Detailed file structure, data flow diagrams, URL reference
 - `SECURITY.md` - Comprehensive threat analysis, attack vectors, mitigations
+- `TESTING.md` - Comprehensive testing strategy (unit, integration, E2E tests)
 - `REQUIREMENTS.md` - Original technical specification (v3.1)
