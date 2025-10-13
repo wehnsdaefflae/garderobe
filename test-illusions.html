@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optical Illusion Challenge Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 1.1em;
+    }
+
+    .test-section {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .test-section h2 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.5em;
+    }
+
+    .explanation {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 0.95em;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .question {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #333;
+      margin: 20px 0 15px 0;
+    }
+
+    .illusion-container {
+      background: #f8f9fa;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .option-btn {
+      background: white;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      padding: 15px;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #667eea;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .option-btn:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .option-btn.correct {
+      background: #10b981;
+      border-color: #10b981;
+      color: white;
+    }
+
+    .option-btn.incorrect {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: white;
+    }
+
+    .refresh-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.2s ease;
+    }
+
+    .refresh-btn:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .result-message {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .result-message.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 2px solid #10b981;
+    }
+
+    .result-message.failure {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 2px solid #ef4444;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border: 2px solid #3b82f6;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: #1e40af;
+    }
+
+    .info-box strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.05em;
+    }
+
+    @media (max-width: 600px) {
+      .options {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 Optical Illusion Challenge Test</h1>
+    <p class="subtitle">Testing human vs machine perception</p>
+
+    <!-- Müller-Lyer Illusion -->
+    <div class="test-section">
+      <h2>1. Müller-Lyer Illusion</h2>
+      <div class="explanation">
+        <strong>How it works:</strong> Lines with outward-pointing arrows (>&lt;) appear longer than lines with inward-pointing arrows (&lt;&gt;), even though all lines are the same length. This exploits depth perception cues in the human visual system.
+      </div>
+      <p class="question">Which line segment appears longest to you?</p>
+      <div class="illusion-container" id="muller-lyer-container"></div>
+      <div class="options" id="muller-lyer-options"></div>
+      <button class="refresh-btn" onclick="generateMullerLyer()">🔄 Generate New</button>
+      <div id="muller-lyer-result"></div>
+      <div class="info-box">
+        <strong>Expected human answer:</strong> Most humans perceive option A (outward arrows) as longest.
+        <br><strong>Machine answer:</strong> Computer vision measures all lines as equal length.
+      </div>
+    </div>
+
+    <!-- Ebbinghaus Illusion -->
+    <div class="test-section">
+      <h2>2. Ebbinghaus Illusion</h2>
+      <div class="explanation">
+        <strong>How it works:</strong> A circle surrounded by small circles appears larger than the same-sized circle surrounded by large circles. This exploits size-contrast perception in human vision.
+      </div>
+      <p class="question">Which center circle appears largest to you?</p>
+      <div class="illusion-container" id="ebbinghaus-container"></div>
+      <div class="options" id="ebbinghaus-options"></div>
+      <button class="refresh-btn" onclick="generateEbbinghaus()">🔄 Generate New</button>
+      <div id="ebbinghaus-result"></div>
+      <div class="info-box">
+        <strong>Expected human answer:</strong> Most humans perceive option B (small surrounding circles) as having the largest center.
+        <br><strong>Machine answer:</strong> Computer vision measures all center circles as equal size.
+      </div>
+    </div>
+
+    <!-- Simultaneous Contrast -->
+    <div class="test-section">
+      <h2>3. Simultaneous Contrast Illusion</h2>
+      <div class="explanation">
+        <strong>How it works:</strong> The same grey square appears lighter on a black background and darker on a white background. This exploits brightness adaptation in human color perception.
+      </div>
+      <p class="question">Which center square appears lightest to you?</p>
+      <div class="illusion-container" id="contrast-container"></div>
+      <div class="options" id="contrast-options"></div>
+      <button class="refresh-btn" onclick="generateContrast()">🔄 Generate New</button>
+      <div id="contrast-result"></div>
+      <div class="info-box">
+        <strong>Expected human answer:</strong> Most humans perceive option A (black background) as lightest.
+        <br><strong>Machine answer:</strong> Computer vision measures all center squares as the same grey value (#888888).
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Fisher-Yates shuffle
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Müller-Lyer Illusion Generator
+    function generateMullerLyer() {
+      const container = document.getElementById('muller-lyer-container');
+      const optionsDiv = document.getElementById('muller-lyer-options');
+      const resultDiv = document.getElementById('muller-lyer-result');
+
+      const lineLength = 120;
+      const baseY = 40;
+      const spacing = 80;
+
+      // Shuffle configurations for randomization
+      const configurations = shuffle([
+        { arrows: 'outward', perceived: 'longest' },   // >----< (appears longest)
+        { arrows: 'inward', perceived: 'shortest' },    // <---->
+        { arrows: 'mixed-out', perceived: 'medium' }, // >---->
+        { arrows: 'mixed-in', perceived: 'medium' }   // <----<
+      ]);
+
+      // Assign labels after shuffling
+      configurations.forEach((config, idx) => {
+        config.label = String.fromCharCode(65 + idx); // A, B, C, D
+      });
+
+      // Track correct answer (outward arrows appear longest)
+      const correctAnswer = configurations.find(c => c.arrows === 'outward').label;
+
+      let svg = `<svg width="600" height="320" xmlns="http://www.w3.org/2000/svg">`;
+      svg += `<defs><style>.label{font-family:Arial,sans-serif;font-size:20px;font-weight:bold;fill:#333;}</style></defs>`;
+
+      configurations.forEach((config, idx) => {
+        const y = baseY + (idx * spacing);
+        const x1 = 100;
+        const x2 = x1 + lineLength;
+
+        svg += `<text x="60" y="${y + 5}" class="label">${config.label}</text>`;
+        svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#000" stroke-width="3"/>`;
+
+        const arrowSize = 15;
+
+        if (config.arrows === 'outward') {
+          svg += `<line x1="${x1}" y1="${y}" x2="${x1 - arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x1}" y1="${y}" x2="${x1 - arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x2}" y1="${y}" x2="${x2 + arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x2}" y1="${y}" x2="${x2 + arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+        } else if (config.arrows === 'inward') {
+          svg += `<line x1="${x1}" y1="${y}" x2="${x1 + arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x1}" y1="${y}" x2="${x1 + arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x2}" y1="${y}" x2="${x2 - arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x2}" y1="${y}" x2="${x2 - arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+        } else if (config.arrows === 'mixed-out') {
+          svg += `<line x1="${x1}" y1="${y}" x2="${x1 - arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x1}" y1="${y}" x2="${x1 - arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x2}" y1="${y}" x2="${x2 - arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x2}" y1="${y}" x2="${x2 - arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+        } else if (config.arrows === 'mixed-in') {
+          svg += `<line x1="${x1}" y1="${y}" x2="${x1 + arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x1}" y1="${y}" x2="${x1 + arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x2}" y1="${y}" x2="${x2 + arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
+          svg += `<line x1="${x2}" y1="${y}" x2="${x2 + arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+        }
+      });
+
+      svg += `</svg>`;
+      container.innerHTML = svg;
+
+      // Generate option buttons
+      optionsDiv.innerHTML = '';
+      configurations.forEach(config => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = `Option ${config.label}`;
+        btn.onclick = () => checkAnswer('muller-lyer', config.label, correctAnswer);
+        optionsDiv.appendChild(btn);
+      });
+
+      resultDiv.innerHTML = '';
+    }
+
+    // Ebbinghaus Illusion Generator
+    function generateEbbinghaus() {
+      const container = document.getElementById('ebbinghaus-container');
+      const optionsDiv = document.getElementById('ebbinghaus-options');
+      const resultDiv = document.getElementById('ebbinghaus-result');
+
+      // Shuffle configurations for randomization
+      const configurations = shuffle([
+        { context: 'large', perceived: 'smaller' },   // Large surrounds (center appears smaller)
+        { context: 'small', perceived: 'larger' },    // Small surrounds (center appears larger)
+        { context: 'medium', perceived: 'neutral' },
+        { context: 'mixed', perceived: 'neutral' }
+      ]);
+
+      // Assign labels after shuffling
+      configurations.forEach((config, idx) => {
+        config.label = String.fromCharCode(65 + idx);
+      });
+
+      // Track correct answer (small surrounds make center appear largest)
+      const correctAnswer = configurations.find(c => c.context === 'small').label;
+
+      const centerRadius = 25;
+
+      let svg = `<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">`;
+      svg += `<defs><style>.label{font-family:Arial,sans-serif;font-size:20px;font-weight:bold;fill:#333;}</style></defs>`;
+
+      configurations.forEach((config, idx) => {
+        const cx = 110 + (idx % 2) * 280;
+        const cy = 100 + Math.floor(idx / 2) * 200;
+
+        svg += `<text x="${cx - 30}" y="${cy - 60}" class="label">${config.label}</text>`;
+        svg += `<circle cx="${cx}" cy="${cy}" r="${centerRadius}" fill="none" stroke="#000" stroke-width="2"/>`;
+
+        const numSurrounding = 6;
+        const surroundDistance = 70;
+
+        for (let i = 0; i < numSurrounding; i++) {
+          const angle = (i / numSurrounding) * Math.PI * 2;
+          const sx = cx + Math.cos(angle) * surroundDistance;
+          const sy = cy + Math.sin(angle) * surroundDistance;
+
+          let surroundRadius;
+          if (config.context === 'large') {
+            surroundRadius = 35;
+          } else if (config.context === 'small') {
+            surroundRadius = 12;
+          } else if (config.context === 'medium') {
+            surroundRadius = 22;
+          } else {
+            surroundRadius = i % 2 === 0 ? 30 : 15;
+          }
+
+          svg += `<circle cx="${sx}" cy="${sy}" r="${surroundRadius}" fill="none" stroke="#666" stroke-width="2"/>`;
+        }
+      });
+
+      svg += `</svg>`;
+      container.innerHTML = svg;
+
+      optionsDiv.innerHTML = '';
+      configurations.forEach(config => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = `Option ${config.label}`;
+        btn.onclick = () => checkAnswer('ebbinghaus', config.label, correctAnswer);
+        optionsDiv.appendChild(btn);
+      });
+
+      resultDiv.innerHTML = '';
+    }
+
+    // Simultaneous Contrast Illusion Generator
+    function generateContrast() {
+      const container = document.getElementById('contrast-container');
+      const optionsDiv = document.getElementById('contrast-options');
+      const resultDiv = document.getElementById('contrast-result');
+
+      // Shuffle configurations for randomization
+      const configurations = shuffle([
+        { background: '#000000', perceived: 'lighter' }, // Black background (grey appears lighter)
+        { background: '#FFFFFF', perceived: 'darker' },  // White background (grey appears darker)
+        { background: '#808080', perceived: 'neutral' },
+        { background: '#404040', perceived: 'medium' }
+      ]);
+
+      // Assign labels after shuffling
+      configurations.forEach((config, idx) => {
+        config.label = String.fromCharCode(65 + idx);
+      });
+
+      // Track correct answer (black background makes grey appear lightest)
+      const correctAnswer = configurations.find(c => c.background === '#000000').label;
+
+      const squareSize = 60;
+      const greyValue = '#888888';
+
+      let svg = `<svg width="600" height="340" xmlns="http://www.w3.org/2000/svg">`;
+      svg += `<defs><style>.label{font-family:Arial,sans-serif;font-size:20px;font-weight:bold;fill:#333;}</style></defs>`;
+
+      configurations.forEach((config, idx) => {
+        const x = 50 + (idx % 2) * 280;
+        const y = 40 + Math.floor(idx / 2) * 170;
+
+        svg += `<text x="${x - 20}" y="${y - 10}" class="label">${config.label}</text>`;
+        // Draw background square with thicker border
+        svg += `<rect x="${x}" y="${y}" width="${squareSize * 2}" height="${squareSize * 2}" fill="${config.background}" stroke="#333" stroke-width="2"/>`;
+
+        const centerX = x + squareSize / 2;
+        const centerY = y + squareSize / 2;
+        // Draw center square with subtle border for definition
+        svg += `<rect x="${centerX}" y="${centerY}" width="${squareSize}" height="${squareSize}" fill="${greyValue}" stroke="#888" stroke-width="1" stroke-opacity="0.3"/>`;
+      });
+
+      svg += `</svg>`;
+      container.innerHTML = svg;
+
+      optionsDiv.innerHTML = '';
+      configurations.forEach(config => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = `Option ${config.label}`;
+        btn.onclick = () => checkAnswer('contrast', config.label, correctAnswer);
+        optionsDiv.appendChild(btn);
+      });
+
+      resultDiv.innerHTML = '';
+    }
+
+    function checkAnswer(type, selected, correct) {
+      const optionsDiv = document.getElementById(`${type}-options`);
+      const resultDiv = document.getElementById(`${type}-result`);
+      const buttons = optionsDiv.querySelectorAll('.option-btn');
+
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        const optionLetter = btn.textContent.split(' ')[1];
+        if (optionLetter === correct) {
+          btn.classList.add('correct');
+        } else if (optionLetter === selected && selected !== correct) {
+          btn.classList.add('incorrect');
+        }
+      });
+
+      if (selected === correct) {
+        resultDiv.innerHTML = `<div class="result-message success">✓ Correct! You perceive the illusion like a human.</div>`;
+      } else {
+        resultDiv.innerHTML = `<div class="result-message failure">✗ Not quite. The expected human answer is ${correct}. Machines typically cannot perceive this illusion.</div>`;
+      }
+    }
+
+    // Generate all illusions on page load
+    window.onload = function() {
+      generateMullerLyer();
+      generateEbbinghaus();
+      generateContrast();
+    };
+  </script>
+</body>
+</html>
