@@ -5,7 +5,7 @@ const { version } = require('../package.json');
 const { getRedisClient } = require('./redis');
 const { createEvent, getEvent, eventExists, buildLocationSchema } = require('./event-manager');
 const { initializeLocations, getNextLocation, returnLocation, getCapacityStats } = require('./location-manager');
-const { generateChallenge, storeChallenge, verifyChallenge, checkChallengeRateLimit } = require('./challenge');
+const { generateIllusionChallenge, storeIllusionChallenge, verifyIllusionChallenge, checkIllusionChallengeRateLimit } = require('./illusion-challenge');
 
 const MAX_EVENTS_PER_IP_PER_HOUR = parseInt(process.env.MAX_EVENTS_PER_IP_PER_HOUR, 10) || 10;
 const MAX_TICKETS_PER_EVENT = parseInt(process.env.MAX_TICKETS_PER_EVENT, 10) || 1000;
@@ -157,21 +157,26 @@ function setupRoutes(app) {
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
       // Check rate limit for challenge requests
-      const allowed = await checkChallengeRateLimit(redis, clientIp);
+      const allowed = await checkIllusionChallengeRateLimit(redis, clientIp);
       if (!allowed) {
         return res.status(429).send('Too many requests. Please try again later.');
       }
 
-      // Generate challenge
-      const challenge = generateChallenge();
-      await storeChallenge(redis, challenge);
-
-      res.render('new-event', {
-        challenge: {
+      // Generate 4 challenges for sequential testing
+      const challenges = [];
+      for (let i = 0; i < 4; i++) {
+        const challenge = generateIllusionChallenge();
+        await storeIllusionChallenge(redis, challenge);
+        challenges.push({
+          type: challenge.type,
           question: challenge.question,
+          svg: challenge.svg,
+          options: challenge.options,
           challengeId: challenge.challengeId
-        }
-      });
+        });
+      }
+
+      res.render('new-event', { challenges });
     } catch (error) {
       console.error('Error generating challenge:', error);
       res.status(500).send('Internal Server Error');
@@ -186,15 +191,20 @@ function setupRoutes(app) {
       const redis = getRedisClient();
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-      // Verify challenge first
-      const { challengeId, challengeAnswer } = req.body;
-      if (!challengeId || !challengeAnswer) {
-        return res.status(400).json({ error: 'Security challenge required' });
+      // Verify all 4 challenges
+      const challengeIds = req.body.challengeIds; // Array of 4 IDs
+      const challengeAnswers = req.body.challengeAnswers; // Array of 4 answers
+
+      if (!challengeIds || !challengeAnswers || challengeIds.length !== 4 || challengeAnswers.length !== 4) {
+        return res.status(400).json({ error: 'All 4 security challenges must be completed' });
       }
 
-      const challengeResult = await verifyChallenge(redis, challengeId, challengeAnswer);
-      if (!challengeResult.valid) {
-        return res.status(400).json({ error: challengeResult.error });
+      // Verify each challenge
+      for (let i = 0; i < 4; i++) {
+        const challengeResult = await verifyIllusionChallenge(redis, challengeIds[i], challengeAnswers[i]);
+        if (!challengeResult.valid) {
+          return res.status(400).json({ error: `Challenge ${i + 1} failed: ${challengeResult.error}` });
+        }
       }
 
       // Check global platform limits

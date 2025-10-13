@@ -156,6 +156,18 @@
       color: #475569;
     }
 
+    /* Challenge Progress */
+    .challenge-progress {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #0d9488;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #f0fdfa;
+      border-radius: 8px;
+    }
+
     /* Challenge Box */
     .challenge-box {
       background: #f8fafc;
@@ -169,14 +181,70 @@
       font-size: 18px;
       font-weight: 600;
       text-align: center;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       color: #0f172a;
     }
 
-    .challenge-input {
-      text-align: center;
-      font-size: 20px;
+    .illusion-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 20px;
+      min-height: 300px;
+      overflow: visible;
+    }
+
+    .illusion-container svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .illusion-container svg .clickable-option {
+      cursor: pointer;
+      transition: opacity 150ms ease-in-out;
+    }
+
+    .illusion-container svg .clickable-option:hover {
+      opacity: 0.7;
+    }
+
+    .illusion-container svg .clickable-option.selected line,
+    .illusion-container svg .clickable-option.selected circle:not([fill="transparent"]),
+    .illusion-container svg .clickable-option.selected rect:not([fill="transparent"]) {
+      stroke: #0d9488;
+      stroke-width: 4;
+    }
+
+    .option-buttons {
+      display: none; /* Hidden - user clicks directly on SVG labels */
+    }
+
+    .option-btn {
+      padding: 14px;
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 6px;
+      color: #0f172a;
+      font-size: 18px;
       font-weight: 700;
+      cursor: pointer;
+      transition: all 150ms ease-in-out;
+      font-family: inherit;
+    }
+
+    .option-btn:hover {
+      border-color: #0d9488;
+      background: #f0fdfa;
+    }
+
+    .option-btn.selected {
+      background: #0d9488;
+      border-color: #0d9488;
+      color: #ffffff;
     }
 
     /* Submit Button */
@@ -193,6 +261,7 @@
       transition: background 150ms ease-in-out;
       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
       font-family: inherit;
+      margin-top: 16px;
     }
 
     .submit-button:hover {
@@ -342,24 +411,38 @@
 
         <div class="form-group">
           <label class="form-label">Security Check</label>
-          <div class="form-hint">Prove you're human (prevents automated abuse)</div>
-          <div class="challenge-box">
-            <div class="challenge-question">
-              What is <%= challenge.question %>?
-            </div>
-            <input
-              type="number"
-              id="challengeAnswer"
-              name="challengeAnswer"
-              class="form-input challenge-input"
-              placeholder="Your answer"
-              required
-            >
-            <input type="hidden" name="challengeId" value="<%= challenge.challengeId %>">
+          <div class="form-hint">Pass 4 challenges to prove you're human (0.39% bot success rate)</div>
+
+          <!-- Progress indicator -->
+          <div class="challenge-progress">
+            Challenge <span id="currentChallenge">1</span> of 4
           </div>
+
+          <!-- All 4 challenges (hidden by CSS, shown one at a time) -->
+          <% challenges.forEach((challenge, index) => { %>
+            <div class="challenge-box challenge-step" data-challenge="<%= index %>" style="display: <%= index === 0 ? 'block' : 'none' %>">
+              <div class="challenge-question">
+                <%= challenge.question %>
+              </div>
+              <div class="illusion-container">
+                <%- challenge.svg %>
+              </div>
+              <div class="option-buttons">
+                <% challenge.options.forEach(option => { %>
+                  <button type="button" class="option-btn" data-challenge-index="<%= index %>" data-answer="<%= option %>">
+                    <%= option %>
+                  </button>
+                <% }); %>
+              </div>
+
+              <!-- Hidden inputs for challenge data -->
+              <input type="hidden" name="challengeIds[]" value="<%= challenge.challengeId %>">
+              <input type="hidden" class="challenge-answer" data-answer-index="<%= index %>" name="challengeAnswers[]" value="">
+            </div>
+          <% }); %>
         </div>
 
-        <button type="submit" class="submit-button">
+        <button type="submit" class="submit-button" id="submitButton" style="display: none">
           Create Event
         </button>
 
@@ -384,12 +467,71 @@
       e.target.value = e.target.value.toUpperCase();
     });
 
+    // Multi-challenge navigation logic
+    let currentChallengeIndex = 0;
+    const answers = ['', '', '', '']; // Store all 4 answers
+
+    // Handle clicks on SVG elements (clickable groups)
+    document.querySelectorAll('.illusion-container svg .clickable-option').forEach(group => {
+      group.addEventListener('click', function() {
+        const answer = this.dataset.answer; // Get the letter (A, B, C, or D) from data attribute
+
+        // Find which challenge this group belongs to
+        const challengeBox = this.closest('.challenge-step');
+        const challengeIndex = parseInt(challengeBox.dataset.challenge);
+
+        // Remove selected state from all options in this challenge
+        challengeBox.querySelectorAll('.clickable-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+
+        // Add selected state to clicked group
+        this.classList.add('selected');
+
+        // Store answer in memory and hidden field
+        answers[challengeIndex] = answer;
+        document.querySelector(`.challenge-answer[data-answer-index="${challengeIndex}"]`).value = answer;
+
+        // Auto-advance to next challenge or show submit button
+        if (challengeIndex < 3) {
+          // Not the last challenge - auto-advance after short delay
+          setTimeout(() => {
+            // Hide current challenge
+            document.querySelectorAll('.challenge-step').forEach(step => {
+              step.style.display = 'none';
+            });
+
+            // Show next challenge
+            const nextIndex = challengeIndex + 1;
+            document.querySelector(`.challenge-step[data-challenge="${nextIndex}"]`).style.display = 'block';
+
+            // Update progress indicator
+            document.getElementById('currentChallenge').textContent = nextIndex + 1;
+            currentChallengeIndex = nextIndex;
+          }, 300); // 300ms delay for visual feedback
+        } else {
+          // Last challenge - show submit button after short delay
+          setTimeout(() => {
+            document.getElementById('submitButton').style.display = 'block';
+          }, 300);
+        }
+      });
+    });
+
     // Form validation
     document.getElementById('eventForm').addEventListener('submit', function(e) {
       const rackStart = document.getElementById('rackStart').value;
       const rackEnd = document.getElementById('rackEnd').value;
       const spotStart = parseInt(document.getElementById('spotStart').value);
       const spotEnd = parseInt(document.getElementById('spotEnd').value);
+
+      // Check if all 4 challenge answers are provided
+      const allAnswered = answers.every(answer => answer !== '');
+      if (!allAnswered) {
+        e.preventDefault();
+        alert('Please answer all 4 security challenges');
+        return;
+      }
 
       if (rackStart > rackEnd) {
         e.preventDefault();

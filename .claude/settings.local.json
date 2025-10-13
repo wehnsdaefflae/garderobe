@@ -12,7 +12,8 @@
       "mcp__browsermcp__browser_press_key",
       "Bash(mkdir:*)",
       "mcp__browsermcp__browser_snapshot",
-      "mcp__browsermcp__browser_click"
+      "mcp__browsermcp__browser_click",
+      "mcp__browsermcp__browser_wait"
     ],
     "deny": [],
     "ask": []

@@ -23,67 +23,71 @@ function shuffle(array) {
  */
 function generateMullerLyerSVG() {
   const lineLength = 120;
-  const baseY = 40;
+  const baseX = 50;
   const spacing = 80;
 
   // Shuffle configurations for randomization
   const configurations = shuffle([
-    { arrows: 'outward', perceived: 'longer' },   // >----<
-    { arrows: 'inward', perceived: 'shorter' },   // <---->
-    { arrows: 'mixed-out', perceived: 'medium' }, // >---->
-    { arrows: 'mixed-in', perceived: 'medium' }   // <----<
+    { arrows: 'outward', perceived: 'longer' },   // arrows pointing away from line
+    { arrows: 'inward', perceived: 'shorter' },   // arrows pointing toward line
+    { arrows: 'mixed-out', perceived: 'medium' }, // mixed outward
+    { arrows: 'mixed-in', perceived: 'medium' }   // mixed inward
   ]);
 
   // Find correct answer index (outward arrows appear longest)
   const correctIndex = configurations.findIndex(c => c.arrows === 'outward');
 
-  let svg = `<svg width="600" height="320" xmlns="http://www.w3.org/2000/svg">`;
+  let svg = `<svg width="100%" height="auto" viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
   svg += `<defs><style>.label{font-family:Arial,sans-serif;font-size:20px;font-weight:bold;fill:#333;}</style></defs>`;
 
   configurations.forEach((config, idx) => {
-    const y = baseY + (idx * spacing);
-    const x1 = 100;
-    const x2 = x1 + lineLength;
-    const label = String.fromCharCode(65 + idx); // A, B, C, D
+    const x = baseX + (idx * spacing);
+    const y1 = 50;
+    const y2 = y1 + lineLength;
+    const answer = String.fromCharCode(65 + idx); // A, B, C, D
 
-    // Draw label
-    svg += `<text x="60" y="${y + 5}" class="label">${label}</text>`;
+    // Create a group with answer data attribute
+    svg += `<g class="clickable-option" data-answer="${answer}" style="cursor:pointer">`;
 
-    // Draw main line
-    svg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#000" stroke-width="3"/>`;
+    // Draw main vertical line
+    svg += `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="#000" stroke-width="3"/>`;
 
     // Draw arrow endings based on configuration
     const arrowSize = 15;
 
     if (config.arrows === 'outward') {
-      // Left: >
-      svg += `<line x1="${x1}" y1="${y}" x2="${x1 - arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
-      svg += `<line x1="${x1}" y1="${y}" x2="${x1 - arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
-      // Right: <
-      svg += `<line x1="${x2}" y1="${y}" x2="${x2 + arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
-      svg += `<line x1="${x2}" y1="${y}" x2="${x2 + arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      // Top: ^
+      svg += `<line x1="${x}" y1="${y1}" x2="${x - arrowSize}" y2="${y1 - arrowSize}" stroke="#000" stroke-width="3"/>`;
+      svg += `<line x1="${x}" y1="${y1}" x2="${x + arrowSize}" y2="${y1 - arrowSize}" stroke="#000" stroke-width="3"/>`;
+      // Bottom: v
+      svg += `<line x1="${x}" y1="${y2}" x2="${x - arrowSize}" y2="${y2 + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      svg += `<line x1="${x}" y1="${y2}" x2="${x + arrowSize}" y2="${y2 + arrowSize}" stroke="#000" stroke-width="3"/>`;
     } else if (config.arrows === 'inward') {
-      // Left: <
-      svg += `<line x1="${x1}" y1="${y}" x2="${x1 + arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
-      svg += `<line x1="${x1}" y1="${y}" x2="${x1 + arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
-      // Right: >
-      svg += `<line x1="${x2}" y1="${y}" x2="${x2 - arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
-      svg += `<line x1="${x2}" y1="${y}" x2="${x2 - arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      // Top: v
+      svg += `<line x1="${x}" y1="${y1}" x2="${x - arrowSize}" y2="${y1 + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      svg += `<line x1="${x}" y1="${y1}" x2="${x + arrowSize}" y2="${y1 + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      // Bottom: ^
+      svg += `<line x1="${x}" y1="${y2}" x2="${x - arrowSize}" y2="${y2 - arrowSize}" stroke="#000" stroke-width="3"/>`;
+      svg += `<line x1="${x}" y1="${y2}" x2="${x + arrowSize}" y2="${y2 - arrowSize}" stroke="#000" stroke-width="3"/>`;
     } else if (config.arrows === 'mixed-out') {
-      // Left: >
-      svg += `<line x1="${x1}" y1="${y}" x2="${x1 - arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
-      svg += `<line x1="${x1}" y1="${y}" x2="${x1 - arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
-      // Right: >
-      svg += `<line x1="${x2}" y1="${y}" x2="${x2 - arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
-      svg += `<line x1="${x2}" y1="${y}" x2="${x2 - arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      // Top: ^
+      svg += `<line x1="${x}" y1="${y1}" x2="${x - arrowSize}" y2="${y1 - arrowSize}" stroke="#000" stroke-width="3"/>`;
+      svg += `<line x1="${x}" y1="${y1}" x2="${x + arrowSize}" y2="${y1 - arrowSize}" stroke="#000" stroke-width="3"/>`;
+      // Bottom: ^
+      svg += `<line x1="${x}" y1="${y2}" x2="${x - arrowSize}" y2="${y2 - arrowSize}" stroke="#000" stroke-width="3"/>`;
+      svg += `<line x1="${x}" y1="${y2}" x2="${x + arrowSize}" y2="${y2 - arrowSize}" stroke="#000" stroke-width="3"/>`;
     } else if (config.arrows === 'mixed-in') {
-      // Left: <
-      svg += `<line x1="${x1}" y1="${y}" x2="${x1 + arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
-      svg += `<line x1="${x1}" y1="${y}" x2="${x1 + arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
-      // Right: <
-      svg += `<line x1="${x2}" y1="${y}" x2="${x2 + arrowSize}" y2="${y - arrowSize}" stroke="#000" stroke-width="3"/>`;
-      svg += `<line x1="${x2}" y1="${y}" x2="${x2 + arrowSize}" y2="${y + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      // Top: v
+      svg += `<line x1="${x}" y1="${y1}" x2="${x - arrowSize}" y2="${y1 + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      svg += `<line x1="${x}" y1="${y1}" x2="${x + arrowSize}" y2="${y1 + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      // Bottom: v
+      svg += `<line x1="${x}" y1="${y2}" x2="${x - arrowSize}" y2="${y2 + arrowSize}" stroke="#000" stroke-width="3"/>`;
+      svg += `<line x1="${x}" y1="${y2}" x2="${x + arrowSize}" y2="${y2 + arrowSize}" stroke="#000" stroke-width="3"/>`;
     }
+
+    // Add invisible clickable overlay
+    svg += `<rect x="${x - 30}" y="${y1 - 20}" width="60" height="${lineLength + 40}" fill="transparent" />`;
+    svg += `</g>`;
   });
 
   svg += `</svg>`;
@@ -112,18 +116,17 @@ function generateEbbinghausSVG() {
   const correctIndex = configurations.findIndex(c => c.context === 'small');
 
   const centerRadius = 25;
-  const spacing = 150;
 
-  let svg = `<svg width="600" height="320" xmlns="http://www.w3.org/2000/svg">`;
+  let svg = `<svg width="100%" height="auto" viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
   svg += `<defs><style>.label{font-family:Arial,sans-serif;font-size:20px;font-weight:bold;fill:#333;}</style></defs>`;
 
   configurations.forEach((config, idx) => {
-    const cx = 100 + (idx % 2) * 300;
-    const cy = 80 + Math.floor(idx / 2) * 160;
-    const label = String.fromCharCode(65 + idx);
+    const cx = 110 + (idx % 2) * 280;
+    const cy = 100 + Math.floor(idx / 2) * 200;
+    const answer = String.fromCharCode(65 + idx);
 
-    // Draw label
-    svg += `<text x="${cx - 30}" y="${cy - 60}" class="label">${label}</text>`;
+    // Create a group with answer data attribute
+    svg += `<g class="clickable-option" data-answer="${answer}" style="cursor:pointer">`;
 
     // Draw center circle (always same size)
     svg += `<circle cx="${cx}" cy="${cy}" r="${centerRadius}" fill="none" stroke="#000" stroke-width="2"/>`;
@@ -150,6 +153,10 @@ function generateEbbinghausSVG() {
 
       svg += `<circle cx="${sx}" cy="${sy}" r="${surroundRadius}" fill="none" stroke="#666" stroke-width="2"/>`;
     }
+
+    // Add invisible clickable overlay on the center circle
+    svg += `<circle cx="${cx}" cy="${cy}" r="${surroundDistance + 50}" fill="transparent" />`;
+    svg += `</g>`;
   });
 
   svg += `</svg>`;
@@ -180,24 +187,28 @@ function generateSimultaneousContrastSVG() {
   const squareSize = 60;
   const greyValue = '#888888'; // Same grey for all center squares
 
-  let svg = `<svg width="600" height="320" xmlns="http://www.w3.org/2000/svg">`;
+  let svg = `<svg width="100%" height="auto" viewBox="0 0 480 340" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
   svg += `<defs><style>.label{font-family:Arial,sans-serif;font-size:20px;font-weight:bold;fill:#333;}</style></defs>`;
 
   configurations.forEach((config, idx) => {
-    const x = 50 + (idx % 2) * 300;
-    const y = 40 + Math.floor(idx / 2) * 160;
-    const label = String.fromCharCode(65 + idx);
+    const x = 50 + (idx % 2) * 280;
+    const y = 40 + Math.floor(idx / 2) * 170;
+    const answer = String.fromCharCode(65 + idx);
 
-    // Draw label
-    svg += `<text x="${x - 20}" y="${y - 10}" class="label">${label}</text>`;
+    // Create a group with answer data attribute
+    svg += `<g class="clickable-option" data-answer="${answer}" style="cursor:pointer">`;
 
     // Draw background square
-    svg += `<rect x="${x}" y="${y}" width="${squareSize * 2}" height="${squareSize * 2}" fill="${config.background}" stroke="#999" stroke-width="1"/>`;
+    svg += `<rect x="${x}" y="${y}" width="${squareSize * 2}" height="${squareSize * 2}" fill="${config.background}" stroke="#333" stroke-width="2"/>`;
 
     // Draw center square (always same grey)
     const centerX = x + squareSize / 2;
     const centerY = y + squareSize / 2;
-    svg += `<rect x="${centerX}" y="${centerY}" width="${squareSize}" height="${squareSize}" fill="${greyValue}" stroke="none"/>`;
+    svg += `<rect x="${centerX}" y="${centerY}" width="${squareSize}" height="${squareSize}" fill="${greyValue}" stroke="#888" stroke-width="1" stroke-opacity="0.3"/>`;
+
+    // Add invisible clickable overlay
+    svg += `<rect x="${x}" y="${y}" width="${squareSize * 2}" height="${squareSize * 2}" fill="transparent" />`;
+    svg += `</g>`;
   });
 
   svg += `</svg>`;
