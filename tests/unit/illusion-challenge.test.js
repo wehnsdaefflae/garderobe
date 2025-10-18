@@ -50,14 +50,18 @@ describe('SVG Generation', () => {
       expect(result.options).toEqual(['A', 'B', 'C', 'D']);
     });
 
-    test('should set correct answer (randomized position)', () => {
+    test('should set max and min answers (randomized position)', () => {
       // Generate multiple times to verify randomization
       for (let i = 0; i < 10; i++) {
         const result = generateMullerLyerSVG();
-        // Correct answer should be one of the options
-        expect(['A', 'B', 'C', 'D']).toContain(result.correctAnswer);
-        // Should have a valid answer
-        expect(result.correctAnswer).toBeTruthy();
+        // Max answer (longest) should be one of the options
+        expect(['A', 'B', 'C', 'D']).toContain(result.maxAnswer);
+        expect(result.maxAnswer).toBeTruthy();
+        // Min answer (shortest) should be one of the options
+        expect(['A', 'B', 'C', 'D']).toContain(result.minAnswer);
+        expect(result.minAnswer).toBeTruthy();
+        // Max and min should be different
+        expect(result.maxAnswer).not.toBe(result.minAnswer);
       }
     });
 
@@ -96,14 +100,18 @@ describe('SVG Generation', () => {
       expect(result.options).toEqual(['A', 'B', 'C', 'D']);
     });
 
-    test('should set correct answer (randomized position)', () => {
+    test('should set max and min answers (randomized position)', () => {
       // Generate multiple times to verify randomization
       for (let i = 0; i < 10; i++) {
         const result = generateEbbinghausSVG();
-        // Correct answer should be one of the options
-        expect(['A', 'B', 'C', 'D']).toContain(result.correctAnswer);
-        // Should have a valid answer
-        expect(result.correctAnswer).toBeTruthy();
+        // Max answer (largest) should be one of the options
+        expect(['A', 'B', 'C', 'D']).toContain(result.maxAnswer);
+        expect(result.maxAnswer).toBeTruthy();
+        // Min answer (smallest) should be one of the options
+        expect(['A', 'B', 'C', 'D']).toContain(result.minAnswer);
+        expect(result.minAnswer).toBeTruthy();
+        // Max and min should be different
+        expect(result.maxAnswer).not.toBe(result.minAnswer);
       }
     });
 
@@ -141,14 +149,18 @@ describe('SVG Generation', () => {
       expect(result.options).toEqual(['A', 'B', 'C', 'D']);
     });
 
-    test('should set correct answer (randomized position)', () => {
+    test('should set max and min answers (randomized position)', () => {
       // Generate multiple times to verify randomization
       for (let i = 0; i < 10; i++) {
         const result = generateSimultaneousContrastSVG();
-        // Correct answer should be one of the options
-        expect(['A', 'B', 'C', 'D']).toContain(result.correctAnswer);
-        // Should have a valid answer
-        expect(result.correctAnswer).toBeTruthy();
+        // Max answer (lightest) should be one of the options
+        expect(['A', 'B', 'C', 'D']).toContain(result.maxAnswer);
+        expect(result.maxAnswer).toBeTruthy();
+        // Min answer (darkest) should be one of the options
+        expect(['A', 'B', 'C', 'D']).toContain(result.minAnswer);
+        expect(result.minAnswer).toBeTruthy();
+        // Max and min should be different
+        expect(result.maxAnswer).not.toBe(result.minAnswer);
       }
     });
 
@@ -213,13 +225,19 @@ describe('Challenge Generation', () => {
 
     if (challenge.type === 'muller-lyer') {
       expect(challenge.question).toContain('line segment');
-      expect(challenge.question).toContain('longest');
+      // Should ask for either longest OR shortest
+      const hasMaxOrMin = challenge.question.includes('longest') || challenge.question.includes('shortest');
+      expect(hasMaxOrMin).toBe(true);
     } else if (challenge.type === 'ebbinghaus') {
       expect(challenge.question).toContain('circle');
-      expect(challenge.question).toContain('largest');
+      // Should ask for either largest OR smallest
+      const hasMaxOrMin = challenge.question.includes('largest') || challenge.question.includes('smallest');
+      expect(hasMaxOrMin).toBe(true);
     } else if (challenge.type === 'simultaneous-contrast') {
       expect(challenge.question).toContain('square');
-      expect(challenge.question).toContain('lightest');
+      // Should ask for either lightest OR darkest
+      const hasMaxOrMin = challenge.question.includes('lightest') || challenge.question.includes('darkest');
+      expect(hasMaxOrMin).toBe(true);
     }
   });
 
@@ -231,6 +249,28 @@ describe('Challenge Generation', () => {
   test('should have valid answer from options', () => {
     const challenge = generateIllusionChallenge();
     expect(challenge.options).toContain(challenge.answer);
+  });
+
+  test('should vary questions between max and min ends of spectrum', () => {
+    const questions = new Set();
+
+    // Generate 50 challenges to capture variety
+    for (let i = 0; i < 50; i++) {
+      const challenge = generateIllusionChallenge();
+      questions.add(challenge.question);
+    }
+
+    // Should have seen multiple question variants
+    // With 3 illusion types × 2 question variants = 6 possible questions
+    expect(questions.size).toBeGreaterThan(2);
+
+    // Check that we get both max and min variants
+    const questionList = Array.from(questions);
+    const hasMaxVariant = questionList.some(q => q.includes('longest') || q.includes('largest') || q.includes('lightest'));
+    const hasMinVariant = questionList.some(q => q.includes('shortest') || q.includes('smallest') || q.includes('darkest'));
+
+    expect(hasMaxVariant).toBe(true);
+    expect(hasMinVariant).toBe(true);
   });
 });
 

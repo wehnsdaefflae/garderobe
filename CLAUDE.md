@@ -80,7 +80,7 @@ The platform uses **cryptographic URL slugs and tokens** instead of passwords:
 ### Data Flow & Key Interactions
 
 **Event Creation Flow**:
-1. User visits `/new` → Gets math challenge (bot prevention)
+1. User visits `/new` → Gets optical illusion challenge (bot prevention)
 2. Submits form → `POST /api/events` → Validates challenge
 3. Server checks platform limits (1000 active events, 100/hour global, 10/hour per IP)
 4. Generates slug + staff token → Creates event in Redis with TTL
@@ -135,12 +135,12 @@ ratelimit:challenges:{ip}            # INTEGER: Challenge requests (expires 1h)
 - `src/routes.js` - All HTTP endpoints (guest, staff, API) with token-based auth
 - `src/event-manager.js` - Event CRUD, slug generation
 - `src/location-manager.js` - Atomic location assignment (Lua scripts)
-- `src/challenge.js` - Math challenge bot prevention
+- `src/illusion-challenge.js` - Optical illusion challenge bot prevention
 - `src/redis.js` - Redis client wrapper
 
 **Views** (EJS templates in `src/views/`):
 - `index.ejs` - Landing page
-- `new-event.ejs` - Event creation form (includes math challenge)
+- `new-event.ejs` - Event creation form (includes optical illusion challenge)
 - `event-created.ejs` - Success page with URLs + QR codes
 - `guest-ticket.ejs` - Guest ticket display (large number + QR)
 - `staff-dashboard.ejs` - Staff interface (scan prompt + stats)
@@ -148,10 +148,11 @@ ratelimit:challenges:{ip}            # INTEGER: Challenge requests (expires 1h)
 
 ### Security Features (v4.0.1)
 
-**Bot Prevention** (challenge.js):
-- Math challenge on event creation (no external CAPTCHA service)
-- Challenge types: addition, subtraction, multiplication
+**Bot Prevention** (illusion-challenge.js):
+- Optical illusion challenge on event creation (no external CAPTCHA service)
+- Multiple challenge types: Müller-Lyer, Ponzo, Horizontal-Vertical, Ebbinghaus, etc.
 - 5-minute TTL, one-time use, rate limited (20/hour per IP)
+- SVG-based visual puzzles asking users to identify correct proportions
 
 **Platform Limits** (routes.js:11-12):
 - Max 1000 active events globally

@@ -135,47 +135,47 @@ describe('Location Manager', () => {
 });
 ```
 
-#### Challenge System (`src/challenge.js`)
+#### Challenge System (`src/illusion-challenge.js`)
 
-**Test File**: `tests/unit/challenge.test.js`
+**Test File**: `tests/unit/illusion-challenge.test.js`
 
 ```javascript
-const { generateChallenge, verifyChallenge } = require('../../src/challenge');
+const { generateIllusionChallenge, verifyIllusionChallenge } = require('../../src/illusion-challenge');
 
-describe('Challenge System', () => {
-  test('should generate valid math challenge', async () => {
-    const challengeId = await generateChallenge('127.0.0.1');
+describe('Illusion Challenge System', () => {
+  test('should generate valid optical illusion challenge', async () => {
+    const challengeId = await generateIllusionChallenge('127.0.0.1');
 
     expect(challengeId).toBeDefined();
     expect(challengeId.length).toBeGreaterThan(0);
   });
 
   test('should verify correct answer', async () => {
-    const challengeId = await generateChallenge('127.0.0.1');
+    const challengeId = await generateIllusionChallenge('127.0.0.1');
     // Get challenge from Redis to find answer
     const redis = getRedisClient();
-    const challengeData = await redis.hGetAll(`challenge:${challengeId}`);
+    const challengeData = await redis.hGetAll(`illusion_challenge:${challengeId}`);
     const correctAnswer = challengeData.answer;
 
-    const result = await verifyChallenge(challengeId, correctAnswer);
+    const result = await verifyIllusionChallenge(challengeId, correctAnswer);
     expect(result).toBe(true);
   });
 
   test('should reject incorrect answer', async () => {
-    const challengeId = await generateChallenge('127.0.0.1');
-    const result = await verifyChallenge(challengeId, '99999');
+    const challengeId = await generateIllusionChallenge('127.0.0.1');
+    const result = await verifyIllusionChallenge(challengeId, 'wrong');
     expect(result).toBe(false);
   });
 
   test('should reject reuse of same challenge', async () => {
-    const challengeId = await generateChallenge('127.0.0.1');
+    const challengeId = await generateIllusionChallenge('127.0.0.1');
     const redis = getRedisClient();
-    const challengeData = await redis.hGetAll(`challenge:${challengeId}`);
+    const challengeData = await redis.hGetAll(`illusion_challenge:${challengeId}`);
 
-    await verifyChallenge(challengeId, challengeData.answer);
+    await verifyIllusionChallenge(challengeId, challengeData.answer);
 
     // Second attempt should fail (one-time use)
-    const result = await verifyChallenge(challengeId, challengeData.answer);
+    const result = await verifyIllusionChallenge(challengeId, challengeData.answer);
     expect(result).toBe(false);
   });
 });

@@ -1,5 +1,40 @@
 # Changelog - Garderobe Digital
 
+## [4.4.0] - 2025-10-18 - Enhanced Challenge Diversity 🎨
+
+### Security Improvements
+
+**Optical Illusion Challenge Diversity:**
+- ✅ Doubled challenge diversity from 3 to 6 unique question variants
+- ✅ Each illusion type now asks for both ends of the spectrum
+- ✅ Müller-Lyer: "longest" OR "shortest" line segment
+- ✅ Ebbinghaus: "largest" OR "smallest" center circle
+- ✅ Simultaneous Contrast: "lightest" OR "darkest" center square
+- ✅ Makes bot pattern recognition significantly harder
+- ✅ All answers still verified server-side (secure)
+
+### Implementation Details
+
+**Challenge Generation:**
+- ✅ Each generator now returns both `maxAnswer` and `minAnswer`
+- ✅ Random selection between max/min question variant per challenge
+- ✅ Correct answer dynamically selected based on question type
+- ✅ Tests updated to verify both answer variants
+
+### Technical Changes
+
+**Modified Files:**
+- `src/illusion-challenge.js` - Enhanced generators with spectrum variants
+- `tests/unit/illusion-challenge.test.js` - Updated test coverage
+- Removed obsolete `src/challenge.js` (old math challenge system)
+
+**Bot Prevention Enhanced:**
+- Previous: 3 illusion types × 1 question each = 3 variants
+- Current: 3 illusion types × 2 questions each = 6 variants
+- Result: 100% increase in challenge unpredictability
+
+---
+
 ## [4.3.0] - 2025-10-09 - Staff View Fix & Architecture Improvement 🔧
 
 ### Critical Bug Fix

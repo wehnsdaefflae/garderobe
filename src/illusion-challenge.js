@@ -34,8 +34,9 @@ function generateMullerLyerSVG() {
     { arrows: 'mixed-in', perceived: 'medium' }   // mixed inward
   ]);
 
-  // Find correct answer index (outward arrows appear longest)
-  const correctIndex = configurations.findIndex(c => c.arrows === 'outward');
+  // Find answer indices for both ends of spectrum
+  const maxIndex = configurations.findIndex(c => c.arrows === 'outward');  // appears longest
+  const minIndex = configurations.findIndex(c => c.arrows === 'inward');   // appears shortest
 
   let svg = `<svg width="100%" height="auto" viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">`;
   svg += `<defs><style>.label{font-family:Arial,sans-serif;font-size:20px;font-weight:bold;fill:#333;}</style></defs>`;
@@ -95,7 +96,8 @@ function generateMullerLyerSVG() {
   return {
     svg,
     options: configurations.map((_, idx) => String.fromCharCode(65 + idx)),
-    correctAnswer: String.fromCharCode(65 + correctIndex)
+    maxAnswer: String.fromCharCode(65 + maxIndex),
+    minAnswer: String.fromCharCode(65 + minIndex)
   };
 }
 
@@ -112,8 +114,9 @@ function generateEbbinghausSVG() {
     { context: 'mixed', perceived: 'medium' }    // Mixed size surrounds
   ]);
 
-  // Find correct answer index (small surrounds make center appear largest)
-  const correctIndex = configurations.findIndex(c => c.context === 'small');
+  // Find answer indices for both ends of spectrum
+  const maxIndex = configurations.findIndex(c => c.context === 'small');  // appears largest
+  const minIndex = configurations.findIndex(c => c.context === 'large');  // appears smallest
 
   const centerRadius = 25;
 
@@ -164,7 +167,8 @@ function generateEbbinghausSVG() {
   return {
     svg,
     options: configurations.map((_, idx) => String.fromCharCode(65 + idx)),
-    correctAnswer: String.fromCharCode(65 + correctIndex)
+    maxAnswer: String.fromCharCode(65 + maxIndex),
+    minAnswer: String.fromCharCode(65 + minIndex)
   };
 }
 
@@ -181,8 +185,9 @@ function generateSimultaneousContrastSVG() {
     { background: '#404040', perceived: 'medium' }   // Dark grey background
   ]);
 
-  // Find correct answer index (black background makes grey appear lightest)
-  const correctIndex = configurations.findIndex(c => c.background === '#000000');
+  // Find answer indices for both ends of spectrum
+  const maxIndex = configurations.findIndex(c => c.background === '#000000');  // appears lightest
+  const minIndex = configurations.findIndex(c => c.background === '#FFFFFF');  // appears darkest
 
   const squareSize = 60;
   const greyValue = '#888888'; // Same grey for all center squares
@@ -216,7 +221,8 @@ function generateSimultaneousContrastSVG() {
   return {
     svg,
     options: configurations.map((_, idx) => String.fromCharCode(65 + idx)),
-    correctAnswer: String.fromCharCode(65 + correctIndex)
+    maxAnswer: String.fromCharCode(65 + maxIndex),
+    minAnswer: String.fromCharCode(65 + minIndex)
   };
 }
 
@@ -229,28 +235,43 @@ function generateIllusionChallenge() {
     {
       type: 'muller-lyer',
       generator: generateMullerLyerSVG,
-      question: 'Which line segment appears longest to you?',
-      humanBias: 'Humans perceive outward arrows as longer'
+      questions: [
+        { text: 'Which line segment appears longest to you?', end: 'max' },
+        { text: 'Which line segment appears shortest to you?', end: 'min' }
+      ],
+      humanBias: 'Humans perceive outward arrows as longer, inward as shorter'
     },
     {
       type: 'ebbinghaus',
       generator: generateEbbinghausSVG,
-      question: 'Which center circle appears largest to you?',
-      humanBias: 'Humans perceive circles with small surrounds as larger'
+      questions: [
+        { text: 'Which center circle appears largest to you?', end: 'max' },
+        { text: 'Which center circle appears smallest to you?', end: 'min' }
+      ],
+      humanBias: 'Humans perceive circles with small surrounds as larger, large surrounds as smaller'
     },
     {
       type: 'simultaneous-contrast',
       generator: generateSimultaneousContrastSVG,
-      question: 'Which center square appears lightest to you?',
-      humanBias: 'Humans perceive grey as lighter on black backgrounds'
+      questions: [
+        { text: 'Which center square appears lightest to you?', end: 'max' },
+        { text: 'Which center square appears darkest to you?', end: 'min' }
+      ],
+      humanBias: 'Humans perceive grey as lighter on black, darker on white'
     }
   ];
 
   // Pick random illusion type
   const illusion = illusionTypes[Math.floor(Math.random() * illusionTypes.length)];
 
+  // Pick random question variant (max or min end of spectrum)
+  const questionVariant = illusion.questions[Math.floor(Math.random() * illusion.questions.length)];
+
   // Generate SVG (with randomized positions)
-  const { svg, options, correctAnswer } = illusion.generator();
+  const { svg, options, maxAnswer, minAnswer } = illusion.generator();
+
+  // Select correct answer based on question variant
+  const correctAnswer = questionVariant.end === 'max' ? maxAnswer : minAnswer;
 
   // Generate challenge ID
   const timestamp = Date.now();
@@ -263,7 +284,7 @@ function generateIllusionChallenge() {
 
   return {
     type: illusion.type,
-    question: illusion.question,
+    question: questionVariant.text,
     svg,
     options,
     answer: correctAnswer,

@@ -237,9 +237,9 @@ NODE_ENV=production
 
 ### Bot Protection
 
-**Math Challenge System** (No CAPTCHA required):
+**Optical Illusion Challenge System** (No CAPTCHA required):
 
-- Simple arithmetic challenge on event creation (e.g., "What is 23 + 17?")
+- Visual perception challenge on event creation using optical illusions
 - Prevents automated bot attacks
 - No external services or tracking
 - Accessible and user-friendly

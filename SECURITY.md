@@ -8,8 +8,8 @@ Comprehensive analysis of attack vectors, implemented mitigations, and remaining
 
 ### ✅ Critical Mitigations (COMPLETE)
 
-1. **✅ Math Challenge System** (No External Services)
-   - Simple arithmetic challenge on event creation
+1. **✅ Optical Illusion Challenge System** (No External Services)
+   - Visual perception challenge on event creation using optical illusions
    - Prevents automated bot attacks
    - 5-minute challenge TTL
    - One-time use per challenge
@@ -56,7 +56,7 @@ Comprehensive analysis of attack vectors, implemented mitigations, and remaining
 **Previous Risk:** ⭐⭐⭐⭐ High
 
 **Mitigations Implemented:**
-- ✅ Math challenge on every event creation
+- ✅ Optical illusion challenge on every event creation
 - ✅ Challenge rate limiting (20/hour per IP)
 - ✅ Global platform limit (1000 active events)
 - ✅ Global hourly limit (100 events/hour)
@@ -347,7 +347,7 @@ NODE_ENV=production                 # Enables HSTS
 
 ### Critical (All Implemented)
 
-- [x] Math challenge on event creation
+- [x] Optical illusion challenge on event creation
 - [x] Global platform limits
 - [x] HSTS header
 - [x] CSP header
@@ -388,7 +388,7 @@ NODE_ENV=production                 # Enables HSTS
 1. Check logs: `docker-compose logs app | grep "EVENT CREATED"`
 2. Identify IP pattern
 3. Platform limits prevent saturation
-4. Math challenge blocks bots
+4. Optical illusion challenge blocks bots
 5. No action needed (self-mitigating)
 
 ### Platform Capacity Reached
@@ -435,7 +435,7 @@ curl -I https://garderobe.io/
 # Test challenge endpoint
 curl https://garderobe.io/new
 
-# Should get HTML with math challenge
+# Should get HTML with optical illusion challenge
 # Try creating event with wrong answer
 # Should be rejected
 ```
@@ -460,7 +460,7 @@ done
 - Token security ✅ Protected (ephemeral)
 
 **Biggest Threats (Addressed):**
-1. ✅ Bot attacks → Math challenge + limits
+1. ✅ Bot attacks → Optical illusion challenge + limits
 2. ✅ Platform DoS → Global limits
 3. ✅ XSS → CSP headers
 4. ✅ MITM → HSTS + HTTPS
@@ -479,7 +479,7 @@ done
 
 All critical vulnerabilities have been addressed without external dependencies:
 
-✅ **Bot Prevention** - Math challenge (no CAPTCHA service needed)
+✅ **Bot Prevention** - Optical illusion challenge (no CAPTCHA service needed)
 ✅ **Platform Limits** - Multi-layer rate limiting
 ✅ **HTTPS Enforcement** - HSTS header
 ✅ **XSS Prevention** - CSP header
