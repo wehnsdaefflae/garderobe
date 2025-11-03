@@ -11,6 +11,7 @@ const MAX_EVENTS_PER_IP_PER_HOUR = parseInt(process.env.MAX_EVENTS_PER_IP_PER_HO
 const MAX_TICKETS_PER_EVENT = parseInt(process.env.MAX_TICKETS_PER_EVENT, 10) || 1000;
 const MAX_ACTIVE_EVENTS = parseInt(process.env.MAX_ACTIVE_EVENTS, 10) || 1000;
 const MAX_EVENTS_PER_HOUR_GLOBAL = parseInt(process.env.MAX_EVENTS_PER_HOUR_GLOBAL, 10) || 100;
+const DISABLE_RATE_LIMITING = process.env.NODE_ENV === 'development' && process.env.DISABLE_RATE_LIMITING === 'true';
 
 /**
  * Check if IP is a private network address
@@ -156,10 +157,12 @@ function setupRoutes(app) {
       const redis = getRedisClient();
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-      // Check rate limit for challenge requests
-      const allowed = await checkIllusionChallengeRateLimit(redis, clientIp);
-      if (!allowed) {
-        return res.status(429).send('Too many requests. Please try again later.');
+      // Check rate limit for challenge requests (skip in development if disabled)
+      if (!DISABLE_RATE_LIMITING) {
+        const allowed = await checkIllusionChallengeRateLimit(redis, clientIp);
+        if (!allowed) {
+          return res.status(429).send('Too many requests. Please try again later.');
+        }
       }
 
       // Generate 4 challenges for sequential testing
@@ -207,32 +210,34 @@ function setupRoutes(app) {
         }
       }
 
-      // Check global platform limits
-      const activeEventCount = await redis.sCard('active_events');
-      if (activeEventCount >= MAX_ACTIVE_EVENTS) {
-        return res.status(503).json({
-          error: 'Platform at capacity. Please try again later.'
-        });
-      }
+      // Check global platform limits (skip in development if disabled)
+      if (!DISABLE_RATE_LIMITING) {
+        const activeEventCount = await redis.sCard('active_events');
+        if (activeEventCount >= MAX_ACTIVE_EVENTS) {
+          return res.status(503).json({
+            error: 'Platform at capacity. Please try again later.'
+          });
+        }
 
-      // Check global hourly limit
-      const hourlyKey = 'events_created_this_hour';
-      const hourlyCount = await redis.incr(hourlyKey);
-      if (hourlyCount === 1) {
-        await redis.expire(hourlyKey, 3600);
-      }
-      if (hourlyCount > MAX_EVENTS_PER_HOUR_GLOBAL) {
-        return res.status(503).json({
-          error: 'Too many events created recently. Please try again later.'
-        });
-      }
+        // Check global hourly limit
+        const hourlyKey = 'events_created_this_hour';
+        const hourlyCount = await redis.incr(hourlyKey);
+        if (hourlyCount === 1) {
+          await redis.expire(hourlyKey, 3600);
+        }
+        if (hourlyCount > MAX_EVENTS_PER_HOUR_GLOBAL) {
+          return res.status(503).json({
+            error: 'Too many events created recently. Please try again later.'
+          });
+        }
 
-      // Rate limiting per IP
-      const allowed = await checkRateLimit(clientIp);
-      if (!allowed) {
-        return res.status(429).json({
-          error: 'Rate limit exceeded. Maximum 10 events per hour per IP.'
-        });
+        // Rate limiting per IP
+        const allowed = await checkRateLimit(clientIp);
+        if (!allowed) {
+          return res.status(429).json({
+            error: 'Rate limit exceeded. Maximum 10 events per hour per IP.'
+          });
+        }
       }
 
       const {
