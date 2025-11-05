@@ -241,6 +241,40 @@
       color: #94a3b8;
     }
 
+    .mnemonic-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .mnemonic-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mnemonic-input-wrapper .word-number {
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 12px;
+    }
+
+    .mnemonic-input-wrapper input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      flex: 1;
+      font-size: 14px;
+    }
+
     @media (max-width: 480px) {
       .stats {
         grid-template-columns: 1fr;
@@ -272,13 +306,69 @@
       </div>
 
       <div class="divider">
-        <span class="divider-text">Can't scan?</span>
+        <span class="divider-text">Guest doesn't have QR code?</span>
+      </div>
+
+      <div class="manual-entry">
+        <form id="mnemonicLookupForm">
+          <div class="form-group">
+            <label class="form-label">Verify 6-Word Recovery Phrase</label>
+            <div class="mnemonic-grid">
+              <div class="mnemonic-input-wrapper">
+                <span class="word-number">1</span>
+                <input type="text" class="mnemonic-word-input" list="bip39-words" placeholder="word" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              </div>
+              <div class="mnemonic-input-wrapper">
+                <span class="word-number">2</span>
+                <input type="text" class="mnemonic-word-input" list="bip39-words" placeholder="word" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              </div>
+              <div class="mnemonic-input-wrapper">
+                <span class="word-number">3</span>
+                <input type="text" class="mnemonic-word-input" list="bip39-words" placeholder="word" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              </div>
+              <div class="mnemonic-input-wrapper">
+                <span class="word-number">4</span>
+                <input type="text" class="mnemonic-word-input" list="bip39-words" placeholder="word" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              </div>
+              <div class="mnemonic-input-wrapper">
+                <span class="word-number">5</span>
+                <input type="text" class="mnemonic-word-input" list="bip39-words" placeholder="word" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              </div>
+              <div class="mnemonic-input-wrapper">
+                <span class="word-number">6</span>
+                <input type="text" class="mnemonic-word-input" list="bip39-words" placeholder="word" required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              </div>
+            </div>
+            <datalist id="bip39-words"></datalist>
+            <div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">
+              Guest can provide their recovery phrase to verify ownership
+            </div>
+          </div>
+          <button type="submit" class="btn-lookup">
+            Verify & Retrieve Coat
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Check Ticket Status</div>
+      <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+        <div style="font-size: 13px; color: #fbbf24; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+          Warning: Not Secure
+        </div>
+        <div style="font-size: 12px; color: #e2e8f0; line-height: 1.5;">
+          Ticket numbers are <strong>NOT authentication</strong>. Anyone can guess a number. Only use this to check if a coat is still here. Always require QR code or mnemonic phrase to authorize coat retrieval.
+        </div>
       </div>
 
       <div class="manual-entry">
         <form id="manualLookupForm">
           <div class="form-group">
-            <label for="ticketNumber" class="form-label">Enter Ticket Number</label>
+            <label for="ticketNumber" class="form-label">Enter Ticket Number (Info Only)</label>
             <input
               type="number"
               id="ticketNumber"
@@ -289,7 +379,7 @@
             >
           </div>
           <button type="submit" class="btn-lookup">
-            Look Up Ticket
+            Check Status
           </button>
         </form>
       </div>
@@ -439,6 +529,71 @@
       e.preventDefault();
       const ticketNumber = document.getElementById('ticketNumber').value;
       window.location.href = `/e/${slug}/ticket/${ticketNumber}?staffToken=${staffToken}`;
+    });
+
+    // Load BIP39 word list for datalist autocomplete
+    fetch('/api/bip39-wordlist')
+      .then(res => res.json())
+      .then(data => {
+        const datalist = document.getElementById('bip39-words');
+        data.words.forEach(word => {
+          const option = document.createElement('option');
+          option.value = word;
+          datalist.appendChild(option);
+        });
+      })
+      .catch(err => console.error('Failed to load word list:', err));
+
+    // Mnemonic lookup form
+    document.getElementById('mnemonicLookupForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      // Collect all 6 words
+      const wordInputs = document.querySelectorAll('.mnemonic-word-input');
+      const mnemonic = Array.from(wordInputs).map(input => input.value.trim().toLowerCase()).join(' ');
+
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.textContent;
+
+      if (!mnemonic || mnemonic.split(' ').length !== 6) {
+        alert('Please enter all 6 words');
+        return;
+      }
+
+      // Disable button and show loading
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Verifying...';
+
+      try {
+        const response = await fetch(`/e/${slug}/api/verify-mnemonic`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            mnemonic: mnemonic,
+            staffToken: staffToken
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.found) {
+          // Success! Redirect to ticket
+          submitBtn.textContent = 'Found! Opening...';
+          window.location.href = `/e/${slug}/ticket/${data.ticketId}?staffToken=${staffToken}`;
+        } else {
+          // Not found
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+          alert(data.error || 'No ticket found with that recovery phrase. Please check the phrase and try again.');
+        }
+      } catch (error) {
+        console.error('Error verifying mnemonic:', error);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+        alert('Error verifying recovery phrase. Please try again.');
+      }
     });
   </script>
 </body>

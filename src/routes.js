@@ -6,6 +6,8 @@ const { getRedisClient } = require('./redis');
 const { createEvent, getEvent, eventExists, buildLocationSchema } = require('./event-manager');
 const { initializeLocations, getNextLocation, returnLocation, getCapacityStats } = require('./location-manager');
 const { generateIllusionChallenge, storeIllusionChallenge, verifyIllusionChallenge, checkIllusionChallengeRateLimit } = require('./illusion-challenge');
+const { generateMnemonic, verifyMnemonic } = require('./mnemonic-generator');
+const { generateCalendarEvent } = require('./calendar-generator');
 
 const MAX_EVENTS_PER_IP_PER_HOUR = parseInt(process.env.MAX_EVENTS_PER_IP_PER_HOUR, 10) || 10;
 const MAX_TICKETS_PER_EVENT = parseInt(process.env.MAX_TICKETS_PER_EVENT, 10) || 1000;
@@ -556,6 +558,13 @@ function setupRoutes(app) {
         `);
       }
 
+      // Generate mnemonic for this ticket
+      const mnemonic = generateMnemonic(slug, ticketId, ticket.token);
+      const mnemonicWords = mnemonic.split(' ').map((word, index) => ({
+        number: index + 1,
+        word: word
+      }));
+
       // Render guest ticket page
       const baseUrl = getBaseUrl(req);
       const ticketUrl = `${baseUrl}/e/${slug}/ticket/${ticketId}?token=${ticket.token}`;
@@ -564,7 +573,9 @@ function setupRoutes(app) {
         slug,
         ticketId,
         ticketUrl,
-        token: ticket.token
+        token: ticket.token,
+        mnemonic,
+        mnemonicWords
       });
 
     } catch (error) {
@@ -615,6 +626,70 @@ function setupRoutes(app) {
 
     } catch (error) {
       console.error('Error generating QR code:', error);
+      res.status(500).send('Internal Server Error');
+    }
+  });
+
+  /**
+   * GET /e/:slug/api/calendar/:id - Download calendar event with QR code and mnemonic
+   */
+  app.get('/e/:slug/api/calendar/:id', async (req, res) => {
+    try {
+      const { slug, id } = req.params;
+      const ticketId = parseInt(id, 10);
+      const token = req.query.token;
+
+      if (isNaN(ticketId) || !token) {
+        return res.status(400).send('Bad Request');
+      }
+
+      // Verify event exists
+      const event = await getEvent(slug);
+      if (!event) {
+        return res.status(404).send('Event not found');
+      }
+
+      // Verify token
+      const ticket = await getTicket(slug, ticketId);
+      if (!ticket || ticket.token !== token) {
+        return res.status(404).send('Not Found');
+      }
+
+      // Generate mnemonic
+      const mnemonic = generateMnemonic(slug, ticketId, token);
+
+      // Generate QR code as base64
+      const baseUrl = getBaseUrl(req);
+      const ticketUrl = `${baseUrl}/e/${slug}/ticket/${ticketId}?token=${token}`;
+
+      const qrCodeBuffer = await QRCode.toBuffer(ticketUrl, {
+        errorCorrectionLevel: 'H',
+        type: 'png',
+        width: 400,
+        margin: 2
+      });
+
+      const qrCodeBase64 = qrCodeBuffer.toString('base64');
+
+      // Generate calendar event
+      const icsContent = generateCalendarEvent({
+        ticketId,
+        slug,
+        eventName: event.name,
+        mnemonic,
+        qrCodeBase64,
+        expiresAt: new Date(event.expiresAt),
+        ticketUrl
+      });
+
+      // Send as downloadable file
+      res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="garderobe-ticket-${ticketId}.ics"`);
+      res.setHeader('Cache-Control', 'no-cache');
+      res.send(icsContent);
+
+    } catch (error) {
+      console.error('Error generating calendar event:', error);
       res.status(500).send('Internal Server Error');
     }
   });
@@ -895,6 +970,68 @@ function setupRoutes(app) {
   });
 
   /**
+   * POST /e/:slug/api/verify-mnemonic - Verify mnemonic phrase and return ticket info
+   */
+  app.post('/e/:slug/api/verify-mnemonic', requireStaffAuth, async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const { mnemonic } = req.body;
+
+      if (!mnemonic || typeof mnemonic !== 'string') {
+        return res.status(400).json({ error: 'Mnemonic phrase required' });
+      }
+
+      // Normalize mnemonic (lowercase, trim, collapse spaces)
+      const normalizedMnemonic = mnemonic.toLowerCase().trim().replace(/\s+/g, ' ');
+
+      // Get event to check it exists
+      const event = await getEvent(slug);
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      // Get ticket counter to know range to check
+      const redis = getRedisClient();
+      const maxTicketId = await redis.get(`event:${slug}:counter`);
+
+      if (!maxTicketId || maxTicketId === '0') {
+        return res.status(404).json({ error: 'No tickets found for mnemonic' });
+      }
+
+      // Search through tickets to find matching mnemonic
+      // Start from most recent tickets (likely to be searched)
+      for (let ticketId = parseInt(maxTicketId); ticketId >= 1; ticketId--) {
+        const ticket = await getTicket(slug, ticketId);
+        if (!ticket) continue;
+
+        const ticketMnemonic = generateMnemonic(slug, ticketId, ticket.token);
+        if (ticketMnemonic.toLowerCase() === normalizedMnemonic) {
+          // Found matching ticket!
+          return res.json({
+            found: true,
+            ticketId,
+            status: ticket.status,
+            location: ticket.location || null,
+            createdAt: ticket.createdAt,
+            checkedInAt: ticket.checkedInAt || null,
+            checkedOutAt: ticket.checkedOutAt || null
+          });
+        }
+      }
+
+      // No match found
+      res.status(404).json({
+        found: false,
+        error: 'No ticket found with that recovery phrase'
+      });
+
+    } catch (error) {
+      console.error('Error verifying mnemonic:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  /**
    * GET /e/:slug/api/capacity - Get capacity stats
    */
   app.get('/e/:slug/api/capacity', requireStaffAuth, async (req, res) => {
@@ -914,6 +1051,15 @@ function setupRoutes(app) {
   // =============================================================================
   // HEALTH CHECK
   // =============================================================================
+
+  /**
+   * GET /api/bip39-wordlist - Get BIP39 word list for autocomplete
+   */
+  app.get('/api/bip39-wordlist', (req, res) => {
+    const bip39 = require('bip39');
+    const wordlist = bip39.wordlists.english;
+    res.json({ words: wordlist });
+  });
 
   /**
    * GET /health - Health check endpoint

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Garderobe Digital is a free, ephemeral NFC-based coat check platform. It's designed as a **multi-tenant platform** (not per-event deployment) where anyone can instantly create a temporary coat check event at a central domain (garderobe.io). Events auto-delete after 72 hours using Redis TTL.
+Garderobe Digital is a free, ephemeral URL-based coat check platform (using QR codes, can be deployed on NFC tags). It's designed as a **multi-tenant platform** (not per-event deployment) where anyone can instantly create a temporary coat check event at a central domain (garderobe.io). Events auto-delete after 72 hours using Redis TTL.
 
 **Core Architecture Principle**: Security through unguessable URLs (~95 bits entropy) + ephemeral data + zero authentication complexity. No user accounts, no passwords for guests, staff authenticated via URL tokens.
 
@@ -70,9 +70,10 @@ npm start
 
 ### Security Model: No Traditional Authentication
 
-The platform uses **cryptographic URL slugs and tokens** instead of passwords:
+The platform uses **cryptographic URL slugs, tokens, and mnemonic phrases** instead of passwords:
 - **Event slugs**: 16-char base64url (~95 bits entropy) = effectively unguessable
-- **Ticket tokens**: 16-char base64url per ticket (guest retrieval)
+- **Ticket tokens**: 16-char base64url per ticket (guest retrieval via QR code)
+- **Mnemonic phrases**: 6-word BIP39 phrases (deterministic, guest recovery backup)
 - **Staff tokens**: 32-char base64url per event (staff access)
 
 **Pure Token-Based Authentication (v4.3.0)**: No sessions, no cookies for authentication. Staff token passed in URL query params, validated on every request. Simpler and more reliable than session-based auth.
@@ -87,16 +88,20 @@ The platform uses **cryptographic URL slugs and tokens** instead of passwords:
 5. Initializes location pool (all available)
 6. Returns `/event-created/:slug` with guest URL and staff URL
 
-**Guest Flow** (NFC tap → Ticket):
-1. NFC tag contains guest URL: `/e/:slug/new`
+**Guest Flow** (NFC tap / QR scan / URL → Ticket):
+1. Guest accesses URL: `/e/:slug/new` (via NFC tag, QR code poster, or direct link)
 2. Server atomically increments counter (`INCR event:${slug}:counter`)
-3. Generates secure token, stores ticket with TTL matching event
-4. Redirects to `/e/:slug/ticket/:id?token=xxx`
-5. Guest sees large ticket number + QR code (for later retrieval)
+3. Generates secure token and deterministic BIP39 mnemonic phrase
+4. Stores ticket with TTL matching event
+5. Redirects to `/e/:slug/ticket/:id?token=xxx`
+6. Guest sees: Large ticket number + QR code + 6-word recovery phrase
+7. Guest saves ticket (calendar file recommended, QR download, screenshot, or memorize phrase)
 
 **Staff Flow** (Scanning & Check-in):
 1. Staff opens `/e/:slug/staff?token=xxx` → Validates staffToken, shows dashboard
-2. Scans guest's QR code → Loads `/e/:slug/ticket/:id?token=xxx&staffToken=xxx`
+2. Guest verification (two methods):
+   - **QR Code**: Staff scans guest's QR → Loads `/e/:slug/ticket/:id?token=xxx&staffToken=xxx`
+   - **Mnemonic**: Guest provides 6-word phrase → Staff enters in form → `POST /e/:slug/api/verify-mnemonic`
 3. Server validates staffToken, renders skeleton HTML (no status/buttons yet)
 4. JavaScript fetches fresh status from `/e/:slug/api/status/:id?staffToken=xxx`
 5. Client-side renders correct buttons based on API response (Check In / Check Out)
@@ -136,14 +141,16 @@ ratelimit:challenges:{ip}            # INTEGER: Challenge requests (expires 1h)
 - `src/event-manager.js` - Event CRUD, slug generation
 - `src/location-manager.js` - Atomic location assignment (Lua scripts)
 - `src/illusion-challenge.js` - Optical illusion challenge bot prevention
+- `src/mnemonic-generator.js` - BIP39 mnemonic phrase generation & verification (v4.5.0)
+- `src/calendar-generator.js` - iCalendar (.ics) file generation (v4.5.0)
 - `src/redis.js` - Redis client wrapper
 
 **Views** (EJS templates in `src/views/`):
 - `index.ejs` - Landing page
 - `new-event.ejs` - Event creation form (includes optical illusion challenge)
 - `event-created.ejs` - Success page with URLs + QR codes
-- `guest-ticket.ejs` - Guest ticket display (large number + QR)
-- `staff-dashboard.ejs` - Staff interface (scan prompt + stats)
+- `guest-ticket.ejs` - Guest ticket display (large number + QR + mnemonic + calendar download)
+- `staff-dashboard.ejs` - Staff interface (scan prompt + mnemonic verification + stats)
 - `staff-ticket.ejs` - Staff actions (check in/out buttons)
 
 ### Security Features (v4.0.1)

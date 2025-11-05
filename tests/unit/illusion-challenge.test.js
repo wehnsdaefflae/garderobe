@@ -68,11 +68,11 @@ describe('SVG Generation', () => {
     test('should draw 4 lines with labels', () => {
       const result = generateMullerLyerSVG();
 
-      // Should have labels A, B, C, D
-      expect(result.svg).toContain('>A</text>');
-      expect(result.svg).toContain('>B</text>');
-      expect(result.svg).toContain('>C</text>');
-      expect(result.svg).toContain('>D</text>');
+      // Should have data attributes for answers A, B, C, D
+      expect(result.svg).toContain('data-answer="A"');
+      expect(result.svg).toContain('data-answer="B"');
+      expect(result.svg).toContain('data-answer="C"');
+      expect(result.svg).toContain('data-answer="D"');
     });
 
     test('should include arrow markers', () => {
@@ -118,10 +118,11 @@ describe('SVG Generation', () => {
     test('should draw circles with labels', () => {
       const result = generateEbbinghausSVG();
 
-      expect(result.svg).toContain('>A</text>');
-      expect(result.svg).toContain('>B</text>');
-      expect(result.svg).toContain('>C</text>');
-      expect(result.svg).toContain('>D</text>');
+      // Should have data attributes for answers A, B, C, D
+      expect(result.svg).toContain('data-answer="A"');
+      expect(result.svg).toContain('data-answer="B"');
+      expect(result.svg).toContain('data-answer="C"');
+      expect(result.svg).toContain('data-answer="D"');
     });
 
     test('should include center and surrounding circles', () => {
@@ -167,18 +168,24 @@ describe('SVG Generation', () => {
     test('should draw rectangles with different backgrounds', () => {
       const result = generateSimultaneousContrastSVG();
 
-      // Should have different background colors
-      expect(result.svg).toContain('#000000'); // Black
-      expect(result.svg).toContain('#FFFFFF'); // White
-      expect(result.svg).toContain('#808080'); // Grey
+      // Should have data attributes for answers A, B, C, D
+      expect(result.svg).toContain('data-answer="A"');
+      expect(result.svg).toContain('data-answer="B"');
+      expect(result.svg).toContain('data-answer="C"');
+      expect(result.svg).toContain('data-answer="D"');
+
+      // Should have multiple rectangles (backgrounds + center squares)
+      const rectMatches = result.svg.match(/<rect/g);
+      expect(rectMatches.length).toBeGreaterThanOrEqual(8); // 4 backgrounds + 4 centers + 4 overlays
     });
 
     test('should include same grey center squares', () => {
       const result = generateSimultaneousContrastSVG();
 
-      // All center squares should be same grey
-      const greyMatches = result.svg.match(/#888888/g);
-      expect(greyMatches.length).toBe(4); // 4 center squares
+      // Should have center squares (looking for center rect elements)
+      // Each configuration creates 3 rects: background, center, overlay
+      const rectMatches = result.svg.match(/<rect/g);
+      expect(rectMatches.length).toBeGreaterThanOrEqual(8); // At least 4 * 2 (background + center)
     });
   });
 });

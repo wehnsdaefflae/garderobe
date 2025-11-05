@@ -4,7 +4,7 @@
 
 ## Overview
 
-Garderobe Digital is a free, open-source platform that lets anyone instantly create a temporary NFC-based coat check system for their event. Perfect for clubs, festivals, parties, conferences, or any event that needs coat management.
+Garderobe Digital is a free, open-source platform that lets anyone instantly create a temporary URL-based coat check system for their event. Uses QR codes for scanning and can easily be deployed on NFC tags. Perfect for clubs, festivals, parties, conferences, or any event that needs coat management.
 
 ### How It's Different
 
@@ -35,11 +35,21 @@ You'll immediately receive two URLs:
 
 **⚠️ Save these now! We don't send emails or store accounts.**
 
-### 3. Setup NFC Tags
+### 3. Setup Guest Access (Choose one or more)
 
+**Option A: NFC Tags** (Recommended for clubs/venues)
 1. Buy programmable NFC tags (NTAG213/215/216)
 2. Write the **Guest URL** to your NFC tags
 3. Place tags at your coat check counter
+
+**Option B: QR Code Poster** (Quickest setup)
+1. Print the QR code from your event creation page
+2. Display it at your coat check counter
+3. Guests scan with their phone camera
+
+**Option C: Share the URL** (For informal events)
+1. Share the Guest URL via messaging apps
+2. Guests can bookmark or access directly
 
 ### 4. Brief Your Staff
 
@@ -49,8 +59,8 @@ You'll immediately receive two URLs:
 
 ### 5. You're Done!
 
-- Guests tap NFC tags → Get digital tickets
-- Staff scan QR codes → Check in/out coats
+- Guests access via NFC tap, QR scan, or URL → Get digital tickets
+- Staff scan guest QR codes → Check in/out coats
 - System auto-deletes after event duration
 
 ## User Flows
@@ -59,11 +69,12 @@ You'll immediately receive two URLs:
 
 ```
 1. Guest arrives at coat check
-2. Taps phone on NFC tag
+2. Taps NFC tag / Scans QR code / Opens URL
 3. Browser opens ticket page instantly
-4. Shows: Large ticket number (#142) + QR code
-5. Guest saves page/screenshot
-6. Later: Shows QR code to retrieve coat
+4. Shows: Large ticket number (#142) + QR code + 6-word recovery phrase
+5. Guest saves ticket (recommended: Add to Calendar with reminder)
+6. Alternative: Download QR code image, screenshot, or memorize phrase
+7. Later: Shows QR code or provides recovery phrase to retrieve coat
 ```
 
 **No app install. No registration. Works on iPhone and Android.**
@@ -73,33 +84,36 @@ You'll immediately receive two URLs:
 ```
 1. Staff opens staff URL (bookmarked)
 2. Ready-to-scan interface appears
-3. Guest shows QR code
-4. Staff phone camera scans code
-5. Browser shows: "CHECK IN COAT #142" button
-6. Tap button → Assigns location → "PLACE COAT IN C-15"
-7. Later: Scan to retrieve → "GET COAT FROM C-15"
-8. Tap "Check Out" → Location freed
+3. Guest shows QR code → Staff phone camera scans code
+   OR Guest provides 6-word recovery phrase → Staff enters words
+4. Browser shows: "CHECK IN COAT #142" button
+5. Tap button → Assigns location → "PLACE COAT IN C-15"
+6. Later: Scan/verify ticket → "GET COAT FROM C-15"
+7. Tap "Check Out" → Location freed
 ```
 
-**No special hardware. Just staff smartphones with cameras.**
+**No special hardware. Just staff smartphones with cameras. Multiple verification methods for reliability.**
 
 ## Features
 
 ### For Guests
 
-- ⚡ **Instant tickets** - Tap NFC tag, get ticket in 1 second
-- 🔒 **Secure** - Cryptographically secure tokens prevent fraud
+- ⚡ **Instant tickets** - Tap NFC, scan QR, or open URL to get ticket in 1 second
+- 🔒 **Secure** - Cryptographically secure tokens + BIP39 mnemonic phrases prevent fraud
 - 📱 **Universal** - Works on all modern smartphones
 - 💾 **No app needed** - Uses native browser
-- 🎫 **Simple** - Just a number and QR code
+- 🎫 **Multiple save options** - Calendar file (best), QR code download, screenshot, or memorize 6-word phrase
+- 🔔 **Calendar reminders** - Add ticket to calendar with automatic 2-hour reminder before expiry
 
 ### For Staff
 
 - 📷 **Camera scanning** - Use phone camera to scan QR codes
+- 🔑 **Mnemonic verification** - Accept 6-word recovery phrases as backup
 - 🎯 **Automatic assignment** - System assigns next available location
 - 📊 **Live statistics** - See capacity usage in real-time
-- ⌨️ **Manual fallback** - Type ticket number if scanning fails
+- ⌨️ **Manual fallback** - Type ticket number for informational lookup
 - 🔄 **Multi-staff** - Multiple staff can work simultaneously
+- ✅ **Native autocomplete** - Word suggestions when entering mnemonic phrases
 
 ### For Organizers
 
@@ -445,6 +459,14 @@ Built with ❤️ for the events community.
 
 ---
 
-**Version**: 4.3.0 (Staff View Fix & Architecture Improvement)
-**Last Updated**: October 9, 2025
+**Version**: 4.5.0 (BIP39 Mnemonic Phrases + Calendar Download)
+**Last Updated**: November 5, 2025
 **Status**: ✅ Production Ready
+
+### What's New in 4.5.0
+
+- **BIP39 Mnemonic Phrases**: Each ticket gets a unique 6-word recovery phrase (deterministically generated)
+- **Calendar Download (.ics)**: Guests can add ticket to calendar with QR code URL, mnemonic, and 2-hour reminder
+- **Mnemonic Verification**: Staff can verify tickets using 6-word phrases with native autocomplete
+- **Multiple Recovery Methods**: QR scan, mnemonic phrase, or ticket number lookup (informational only)
+- **Enhanced Reliability**: Guests can memorize or write down their recovery phrase if phone fails

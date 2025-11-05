@@ -80,6 +80,62 @@
       margin: 0 auto;
     }
 
+    .mnemonic-container {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 16px 0;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .mnemonic-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .mnemonic-words {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .mnemonic-word {
+      background: #f1f5f9;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .word-number {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 20px;
+    }
+
+    .word-text {
+      flex: 1;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    .mnemonic-copy {
+      font-size: 13px;
+      color: #64748b;
+      text-align: center;
+      font-style: italic;
+    }
+
     .warning-box {
       background: #ffffff;
       border: 1px solid #fbbf24;
@@ -220,23 +276,15 @@
       <div class="ticket-number">#<%= ticketId %></div>
     </div>
 
+    <button class="action-button" id="saveCalendarBtn">
+      <svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+      </svg>
+      Add to Calendar (Best Option)
+    </button>
+
     <div class="qr-container">
       <img src="/e/<%= slug %>/api/qr/<%= ticketId %>?token=<%= token %>" alt="QR Code" class="qr-code" id="qrCode">
-    </div>
-
-    <div class="warning-box">
-      <div class="warning-title">
-        <svg class="warning-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-        </svg>
-        Important - Save This Page
-      </div>
-      <ul class="warning-list">
-        <li>This is your only way to retrieve your coat</li>
-        <li>Do not close this page or your browser</li>
-        <li>Do not share your screen with anyone</li>
-        <li>You can find it in your browser history if needed</li>
-      </ul>
     </div>
 
     <button class="action-button" id="saveQrBtn">
@@ -246,12 +294,27 @@
       Save QR Code Image
     </button>
 
+    <div class="mnemonic-container">
+      <div class="mnemonic-title">🔑 Your Recovery Phrase</div>
+      <div class="mnemonic-words">
+        <% mnemonicWords.forEach(function(item) { %>
+          <div class="mnemonic-word">
+            <span class="word-number"><%= item.number %></span>
+            <span class="word-text"><%= item.word %></span>
+          </div>
+        <% }); %>
+      </div>
+      <div class="mnemonic-copy">Staff can verify your ticket with these words</div>
+    </div>
+
     <div class="info-box">
-      <div class="info-title">Ways to save your ticket:</div>
+      <div class="info-title">Ways to retrieve your coat:</div>
       <ul class="save-methods">
+        <li><strong>Best:</strong> Add to calendar - includes ticket URL, recovery phrase, and reminder</li>
+        <li>Download QR code image (button above)</li>
+        <li>Write down or memorize your 6-word recovery phrase</li>
         <li>Take a screenshot of this page</li>
-        <li>Tap the button above to download the QR code</li>
-        <li>Keep this browser tab open until you retrieve your coat</li>
+        <li>Keep this browser tab open</li>
       </ul>
     </div>
   </div>
@@ -261,6 +324,45 @@
     window.addEventListener('beforeunload', function (e) {
       e.preventDefault();
       e.returnValue = '';
+    });
+
+    // Add to Calendar
+    document.getElementById('saveCalendarBtn').addEventListener('click', async function() {
+      const btn = this;
+      const originalHTML = btn.innerHTML;
+
+      try {
+        // Show loading state
+        btn.innerHTML = '<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Downloading...';
+        btn.disabled = true;
+
+        // Fetch the calendar file
+        const response = await fetch('/e/<%= slug %>/api/calendar/<%= ticketId %>?token=<%= token %>');
+        const blob = await response.blob();
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'garderobe-ticket-<%= ticketId %>.ics';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        // Show success feedback
+        btn.innerHTML = '<svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Saved to Calendar!';
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.disabled = false;
+        }, 3000);
+      } catch (error) {
+        console.error('Error downloading calendar:', error);
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        alert('Could not download calendar file. Please try again!');
+      }
     });
 
     // Save QR Code as image
