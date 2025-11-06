@@ -447,7 +447,6 @@ Built with ❤️ for the events community.
 
 ### For Developers
 
-- **Development Guide**: See `CLAUDE.md`
 - **Testing Guide**: See `TESTING.md`
 - **Security Analysis**: See `SECURITY.md`
 - **Changelog**: See `CHANGELOG.md`
@@ -455,7 +454,7 @@ Built with ❤️ for the events community.
 ## Community
 
 - **GitHub**: https://github.com/wehnsdaefflae/garderobe
-- **Documentation**: See project files (CLAUDE.md, TESTING.md, SECURITY.md)
+- **Documentation**: See project files (TESTING.md, SECURITY.md)
 
 ---
 
